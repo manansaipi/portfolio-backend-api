@@ -1,0 +1,15 @@
+name: portfolio-api
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.13
+  - fastapi
+  - uvicorn
+  - sqlalchemy
+  - pymysql
+  - cryptography
+  - alembic
+  - pydantic-settings
+  - pytest
+  - httpx

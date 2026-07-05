@@ -1,0 +1,127 @@
+from pydantic import BaseModel, Field
+from typing import List, Optional
+from datetime import date, datetime
+
+# --- Project Schemas ---
+class ProjectBase(BaseModel):
+    title: str
+    description: Optional[str] = None
+    url: Optional[str] = None
+    technologies: Optional[str] = None
+
+class ProjectCreate(ProjectBase):
+    pass
+
+class Project(ProjectBase):
+    id: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# --- Experience Schemas ---
+class ExperienceBase(BaseModel):
+    company: str
+    position: str
+    start_date: str
+    end_date: Optional[str] = None
+    description: Optional[str] = None
+    img: Optional[str] = None
+    points: Optional[str] = None
+    images: Optional[str] = None
+    bg_color: Optional[str] = None
+    url: Optional[str] = None
+
+class ExperienceCreate(ExperienceBase):
+    pass
+
+class ExperienceUpdate(BaseModel):
+    company: Optional[str] = None
+    position: Optional[str] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    description: Optional[str] = None
+    img: Optional[str] = None
+    points: Optional[str] = None
+    images: Optional[str] = None
+    bg_color: Optional[str] = None
+    url: Optional[str] = None
+
+class Experience(ExperienceBase):
+    id: str
+
+    class Config:
+        from_attributes = True
+
+
+# --- Comment Schemas ---
+class CommentBase(BaseModel):
+    username: str
+    content: str
+    parent_id: Optional[str] = None
+    profile_img: Optional[str] = None
+    likes: Optional[int] = 0
+
+class CommentCreate(CommentBase):
+    pass
+
+class Comment(CommentBase):
+    id: str
+    writing_id: str
+    created_at: datetime
+    
+    # We will build a tree recursively
+    replies: List["Comment"] = Field(default_factory=list)
+
+    class Config:
+        from_attributes = True
+
+# --- Writing Schemas ---
+class WritingBase(BaseModel):
+    title: str
+    content: Optional[str] = None
+    author: Optional[str] = None
+    author_img: Optional[str] = None
+    image: Optional[str] = None
+
+class WritingCreate(WritingBase):
+    pass
+
+class WritingUpdate(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+    author: Optional[str] = None
+    author_img: Optional[str] = None
+    image: Optional[str] = None
+
+class Writing(WritingBase):
+    id: str
+    published_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class WritingWithComments(Writing):
+    comments: List[Comment] = Field(default_factory=list)
+    
+    class Config:
+        from_attributes = True
+
+# --- Certificate Schemas ---
+class CertificateBase(BaseModel):
+    name: str
+    year: Optional[str] = None
+    description: Optional[str] = None
+    img: Optional[str] = None
+    bg_color: Optional[str] = None
+    link: Optional[str] = None
+
+class CertificateCreate(CertificateBase):
+    pass
+
+class Certificate(CertificateBase):
+    id: str
+
+    class Config:
+        from_attributes = True
