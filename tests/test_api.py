@@ -1,5 +1,9 @@
 import pytest
 import io
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -8,9 +12,12 @@ from app.main import app
 from app.database import Base, get_db
 from app import schemas
 
-# Setup in-memory SQLite database for testing
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+# Setup database for testing (WARNING: This will drop tables in defaultdb!)
+# To avoid data loss, ideally use a separate test database on the server.
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
+if not SQLALCHEMY_DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable is not set")
+engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"ssl": {}})
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def override_get_db():
