@@ -5,25 +5,12 @@ from app.models import Writing, Certificate, Comment, Experience, Base
 
 blogs = [
 	{
-		"title": "GFX100RF: The midlife crisis camera",
-		"date": "Apr 5, 2025",
+		"title": "Grateful for the journey at LG Sinarmas Technology Solutions (LGSM) as part of the Smart Factory Development Team.",
+        "content": "Since joining on December 9, 2024, I had the opportunity to contribute to EV Battery Smart Factory initiatives, working on backend systems that support core MES (Manufacturing Execution System) operations and workflows",
+		"date": "Dec 9, 2024",
 		"author": "Abdul Mannan Saipi",
 		"authorImg": "/static/img/author/abdulmannansaipi.png",
-		"image": "https://framerusercontent.com/images/Z6qmtAxjwbIurGFL0Iboo0hQnJw.jpg?scale-down-to=512",
-	},
-	{
-		"title": "Predicting the Fixed Lens GFX",
-		"date": "May 13, 2024",
-		"author": "Abdul Mannan Saipi",
-		"authorImg": "/static/img/author/abdulmannansaipi.png",
-		"image": "https://framerusercontent.com/images/ivYYFXUUWUo6JjgupgzZtcLoQw.jpg",
-	},
-	{
-		"title": "GFX100RF: The midlife crisis camera",
-		"date": "Apr 5, 2025",
-		"author": "Abdul Mannan Saipi",
-		"authorImg": "/static/img/author/abdulmannansaipi.png",
-		"image": "https://framerusercontent.com/images/Z6qmtAxjwbIurGFL0Iboo0hQnJw.jpg?scale-down-to=512",
+		"image": "https://media.licdn.com/dms/image/v2/D5622AQF3bv7cJC4TIg/feedshare-shrink_1280/B56Ztbk0ntKcAs-/0/1766767967176?e=1784764800&v=beta&t=LfU8TlZCEyrU14yoF1E--orIgim05fJG8Yw6zN6k8iA",
 	}
 ]
 
@@ -229,15 +216,16 @@ def seed_db():
         
         # 1. Seed Blogs (Writings)
         writing_objects = []
-        for b in blogs:
+        for i, b in enumerate(blogs, 1):
             pub_date = datetime.strptime(b["date"], "%b %d, %Y")
             writing = Writing(
                 title=b["title"],
-                content="", # Frontend didn't provide content
+                content=b.get("content", ""), 
                 published_at=pub_date,
                 author=b["author"],
                 author_img=b["authorImg"],
-                image=b["image"]
+                image=b["image"],
+                order=i
             )
             db.add(writing)
             writing_objects.append(writing)
@@ -245,19 +233,20 @@ def seed_db():
         db.commit()
         
         # 2. Seed Certificates
-        for c in certificates:
+        for i, c in enumerate(certificates, 1):
             cert = Certificate(
                 name=c["name"],
                 year=c["year"],
                 description=c["desc"],
                 img=c["img"],
                 bg_color=c["bgColor"],
-                link=c["link"]
+                link=c["link"],
+                order=i
             )
             db.add(cert)
             
         # 3. Seed Works (Experiences)
-        for w in works:
+        for i, w in enumerate(works, 1):
             exp = Experience(
                 company=w["company"],
                 position=w["role"],
@@ -268,7 +257,8 @@ def seed_db():
                 points=json.dumps(w["points"]),
                 images=json.dumps(w["iamges"]), # Keeping original typo keys
                 bg_color=w["bgColor"],
-                url=w["url"]
+                url=w["url"],
+                order=i
             )
             db.add(exp)
             
