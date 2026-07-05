@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from .. import models, schemas, database
-from ..auth import get_current_admin
+from ..auth import get_current_admin, get_optional_current_admin
 from ..rate_limiter import limiter
 
 # Note: Some comment endpoints are nested under writings, e.g., /api/writings/{writing_id}/comments
@@ -16,7 +16,7 @@ router = APIRouter(
 
 @router.post("/api/writings/{writing_id}/comments", response_model=schemas.Comment, status_code=status.HTTP_201_CREATED)
 @limiter.limit("5/minute")
-def create_comment(request: Request, writing_id: str, comment: schemas.CommentCreate, db: Session = Depends(database.get_db)):
+def create_comment(request: Request, writing_id: str, comment: schemas.CommentCreate, db: Session = Depends(database.get_db), current_user: str | None = Depends(get_optional_current_admin)):
     # Verify writing exists
     db_writing = db.query(models.Writing).filter(models.Writing.id == writing_id).first()
     if not db_writing:
@@ -30,7 +30,8 @@ def create_comment(request: Request, writing_id: str, comment: schemas.CommentCr
         if db_parent.writing_id != writing_id:
             raise HTTPException(status_code=400, detail="Parent comment belongs to a different writing")
             
-    db_comment = models.Comment(**comment.model_dump(), writing_id=writing_id)
+    is_author = current_user is not None
+    db_comment = models.Comment(**comment.model_dump(), writing_id=writing_id, is_author=is_author)
     db.add(db_comment)
     db.commit()
     db.refresh(db_comment)
@@ -58,6 +59,7 @@ def get_comments(writing_id: str, db: Session = Depends(database.get_db)):
             "created_at": c.created_at,
             "profile_img": c.profile_img,
             "likes": c.likes,
+            "is_author": c.is_author,
             "replies": []
         }
         comment_dict[c.id] = schemas.Comment(**c_dict)
@@ -80,6 +82,20 @@ def like_comment(comment_id: str, db: Session = Depends(database.get_db)):
         raise HTTPException(status_code=404, detail="Comment not found")
         
     db_comment.likes += 1
+    db.commit()
+    db.refresh(db_comment)
+    return db_comment
+
+@router.put("/api/comments/{comment_id}", response_model=schemas.Comment)
+def update_comment(comment_id: str, comment_update: schemas.CommentUpdate, db: Session = Depends(database.get_db), current_user: str = Depends(get_current_admin)):
+    db_comment = db.query(models.Comment).filter(models.Comment.id == comment_id).first()
+    if not db_comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    
+    update_data = comment_update.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_comment, key, value)
+    
     db.commit()
     db.refresh(db_comment)
     return db_comment

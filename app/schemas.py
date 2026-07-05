@@ -66,10 +66,15 @@ class CommentBase(BaseModel):
 class CommentCreate(CommentBase):
     pass
 
+class CommentUpdate(BaseModel):
+    content: Optional[str] = None
+    username: Optional[str] = None
+
 class Comment(CommentBase):
     id: str
     writing_id: str
     created_at: datetime
+    is_author: bool = False
     
     # We will build a tree recursively
     replies: List["Comment"] = Field(default_factory=list)

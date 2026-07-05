@@ -8,21 +8,21 @@ blogs = [
 		"title": "GFX100RF: The midlife crisis camera",
 		"date": "Apr 5, 2025",
 		"author": "Abdul Mannan Saipi",
-		"authorImg": "/static/img/author/Matteo.jpg",
+		"authorImg": "/static/img/author/abdulmannansaipi.png",
 		"image": "https://framerusercontent.com/images/Z6qmtAxjwbIurGFL0Iboo0hQnJw.jpg?scale-down-to=512",
 	},
 	{
 		"title": "Predicting the Fixed Lens GFX",
 		"date": "May 13, 2024",
 		"author": "Abdul Mannan Saipi",
-		"authorImg": "/static/img/author/Matteo.jpg",
+		"authorImg": "/static/img/author/abdulmannansaipi.png",
 		"image": "https://framerusercontent.com/images/ivYYFXUUWUo6JjgupgzZtcLoQw.jpg",
 	},
 	{
 		"title": "GFX100RF: The midlife crisis camera",
 		"date": "Apr 5, 2025",
 		"author": "Abdul Mannan Saipi",
-		"authorImg": "/static/img/author/Matteo.jpg",
+		"authorImg": "/static/img/author/abdulmannansaipi.png",
 		"image": "https://framerusercontent.com/images/Z6qmtAxjwbIurGFL0Iboo0hQnJw.jpg?scale-down-to=512",
 	}
 ]
@@ -140,14 +140,14 @@ comments = [
         "date": "Apr 5, 2025",
         "comment": "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Ex eos ipsam laudantium minus debitis neque iste autem alias eius distinctio.",
         "totalLikes": 83,
-        "profileImg": "/static/img/author/Matteo.jpg",
+        "profileImg": "/static/img/author/no_profile.jpeg",
     },
     {
         "name": "Win Dev",
         "date": "July 25, 2029",
         "comment": "Lorem ipsum dolor. Ex eos ipsam laudantium minus debitis neque iste autem alias eius distinctio.",
         "totalLikes": 99,
-        "profileImg": "/static/img/author/Matteo.jpg",
+        "profileImg": "/static/img/author/no_profile.jpeg",
     },
 ]
 
