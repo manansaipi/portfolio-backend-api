@@ -31,7 +31,12 @@ def create_comment(request: Request, writing_id: str, comment: schemas.CommentCr
             raise HTTPException(status_code=400, detail="Parent comment belongs to a different writing")
             
     is_author = current_user is not None
-    db_comment = models.Comment(**comment.model_dump(), writing_id=writing_id, is_author=is_author)
+    comment_data = comment.model_dump()
+    if is_author:
+        comment_data["profile_img"] = "/static/img/author/abdulmannansaipi.png"
+        comment_data["username"] = "Abdul Mannan Saipi"
+        
+    db_comment = models.Comment(**comment_data, writing_id=writing_id, is_author=is_author)
     db.add(db_comment)
     db.commit()
     db.refresh(db_comment)
