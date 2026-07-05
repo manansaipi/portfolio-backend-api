@@ -91,6 +91,7 @@ class WritingBase(BaseModel):
     author: Optional[str] = None
     author_img: Optional[str] = None
     image: Optional[str] = None
+    images: Optional[str] = None
     order: Optional[int] = None
 
 class WritingCreate(WritingBase):
@@ -102,6 +103,7 @@ class WritingUpdate(BaseModel):
     author: Optional[str] = None
     author_img: Optional[str] = None
     image: Optional[str] = None
+    images: Optional[str] = None
     order: Optional[int] = None
 
 class Writing(WritingBase):

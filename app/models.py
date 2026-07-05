@@ -46,6 +46,7 @@ class Writing(Base):
     author = Column(String(255), nullable=True)
     author_img = Column(String(255), nullable=True)
     image = Column(String(500), nullable=True)
+    images = Column(Text, nullable=True) # Stored as JSON string
     order = Column(Integer, nullable=True)
     
     comments = relationship("Comment", back_populates="writing", cascade="all, delete-orphan")
