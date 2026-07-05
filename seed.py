@@ -141,23 +141,6 @@ certificates = [
 	},
 ]
 
-comments = [
-    {
-        "name": "John Doe",
-        "date": "Apr 5, 2025",
-        "comment": "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Ex eos ipsam laudantium minus debitis neque iste autem alias eius distinctio.",
-        "totalLikes": 83,
-        "profileImg": "/static/img/author/no_profile.jpeg",
-    },
-    {
-        "name": "Win Dev",
-        "date": "July 25, 2029",
-        "comment": "Lorem ipsum dolor. Ex eos ipsam laudantium minus debitis neque iste autem alias eius distinctio.",
-        "totalLikes": 99,
-        "profileImg": "/static/img/author/no_profile.jpeg",
-    },
-]
-
 works = [
 	{
 		"company": "Samsung R&D Indonesia",
