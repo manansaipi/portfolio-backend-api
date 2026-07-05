@@ -6,11 +6,30 @@ from app.models import Writing, Certificate, Comment, Experience, Base
 blogs = [
 	{
 		"title": "Grateful for the journey at LG Sinarmas Technology Solutions (LGSM) as part of the Smart Factory Development Team.",
-        "content": "Since joining on December 9, 2024, I had the opportunity to contribute to EV Battery Smart Factory initiatives, working on backend systems that support core MES (Manufacturing Execution System) operations and workflows",
-		"date": "Dec 9, 2024",
+        "content": "Grateful for the journey at LG Sinarmas Technology Solutions (LGSM) as part of the Smart Factory Development Team.\n\nSince joining on December 9, 2024, I had the opportunity to contribute to EV Battery Smart Factory initiatives, working on backend systems that support core MES (Manufacturing Execution System) operations and workflows\n\nAlong the way, I was also involved in analyzing production data, validating backend features to ensure performance and reliability, and developing internal applications to support recruitment processes within LG Sinarmas Technology Solutions.\n\nToday (December 26, 2025) marks the end of this chapter. I’m proud of the work delivered, the systems built, and the lessons learned from an incredible team.\n\nThank you to everyone I had the chance to work with. Wishing LGSM and the Smart Factory team continued success ahead.✨",
+		"date": "Dec 27, 2025",
 		"author": "Abdul Mannan Saipi",
 		"authorImg": "/static/img/author/abdulmannansaipi.png",
 		"image": "https://media.licdn.com/dms/image/v2/D5622AQF3bv7cJC4TIg/feedshare-shrink_1280/B56Ztbk0ntKcAs-/0/1766767967176?e=1784764800&v=beta&t=LfU8TlZCEyrU14yoF1E--orIgim05fJG8Yw6zN6k8iA",
+        "images": [
+            "https://media.licdn.com/dms/image/v2/D562DAQEjRjOOdOJmCQ/profile-treasury-image-shrink_1280_1280/B56ZWHE3ywGUAQ-/0/1741727980319?e=1783868400&v=beta&t=-_2t1uMo6HEnZ_J56Dxp96No1KG63jZ4MbKJbZuWkAY",
+            "https://media.licdn.com/dms/image/v2/D562DAQEn2DAKojkkrw/profile-treasury-image-shrink_1280_1280/profile-treasury-image-shrink_1280_1280/0/1737023600328?e=1783868400&v=beta&t=Yt9OxVj6wN49F_BHhKocGEUFe1So14QytQ4brZ-LeNU",
+			"https://media.licdn.com/dms/image/v2/D562DAQE81nvkfXqqMA/profile-treasury-image-shrink_1280_1280/profile-treasury-image-shrink_1280_1280/0/1737023658186?e=1783868400&v=beta&t=xVrzEjo1dnKYYTvlfI2xNs9XI9091vJTmLXCQDJBZKI",
+        ]
+	},
+	{
+		"title": "Reflecting on an Incredible Internship Journey at Mattel",
+        "content": "🌟 Reflecting on an Incredible Internship Journey at Mattel 🌟\n\nYesterday, December 6th, marked the end of an incredible chapter in my professional journey—my internship at Mattel, which began on January 3rd, 2024. Over the past 11 months, I had the privilege of working with an amazing team in the EHS & Compliance Department, learning from industry experts, and contributing to exciting projects that challenged me to grow both personally and professionally.\n\nFrom developing innovative solutions to collaborating on impactful initiatives, my time at Mattel has been nothing short of transformative. I am deeply grateful for the support and guidance I received from my mentors, colleagues, and everyone who made this experience so enriching.\n\nA special thank you to the EHS & Compliance team for fostering such a collaborative and inspiring environment. I’ve gained invaluable skills, built lasting connections, and discovered new perspectives that I will carry with me throughout my career.\n\nAlthough this chapter has come to an end, I’m excited for what lies ahead as I continue to build on the foundation I’ve established here.\n\nTo my fellow interns and colleagues—thank you for making this journey unforgettable. Let’s stay connected, and I look forward to seeing all the amazing things you’ll achieve!\n\n#EndOfAnEra #MattelInternship #EHSTeam #Grateful #LearningAndGrowth",
+		"date": "Dec 07, 2024",
+		"author": "Abdul Mannan Saipi",
+		"authorImg": "/static/img/author/abdulmannansaipi.png",
+		"image": "https://media.licdn.com/dms/image/v2/D5622AQFkxwoPux7gEg/feedshare-shrink_1280/feedshare-shrink_1280/0/1733557069514?e=1784764800&v=beta&t=tAPL65CU2l3iwbxKDGlpxh378i_xDdjJXKr3BfCgCz0",
+        "images": [
+			"https://media.licdn.com/dms/image/v2/D5622AQFkxwoPux7gEg/feedshare-shrink_1280/feedshare-shrink_1280/0/1733557069514?e=1784764800&v=beta&t=tAPL65CU2l3iwbxKDGlpxh378i_xDdjJXKr3BfCgCz0",
+			"https://media.licdn.com/dms/image/v2/D5622AQH2lQAYPl33rQ/feedshare-shrink_800/feedshare-shrink_800/0/1733557069584?e=1784764800&v=beta&t=5TpzkPJVxw-YiX56wfTiKqlYcKrHlLNOJL4y65DkprU",
+			"https://media.licdn.com/dms/image/v2/D5622AQGjQbNdxfSHig/feedshare-shrink_800/feedshare-shrink_800/0/1733557067969?e=1784764800&v=beta&t=tvgIgYSBTLFFpdVeGD0YfURZwpyV4BRn3-zYVrGc5Us"
+
+        ]
 	}
 ]
 
@@ -225,6 +244,7 @@ def seed_db():
                 author=b["author"],
                 author_img=b["authorImg"],
                 image=b["image"],
+                images=json.dumps(b.get("images", [])),
                 order=i
             )
             db.add(writing)
