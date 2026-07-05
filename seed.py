@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from app.database import SessionLocal, engine
 from app.models import Writing, Certificate, Comment, Experience, Base
 
@@ -222,6 +223,9 @@ works = [
 	},
 ]
 
+def get_wib_time():
+    return datetime.now(ZoneInfo("Asia/Jakarta"))
+
 def seed_db():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
@@ -236,7 +240,7 @@ def seed_db():
         # 1. Seed Blogs (Writings)
         writing_objects = []
         for i, b in enumerate(blogs, 1):
-            pub_date = datetime.strptime(b["date"], "%b %d, %Y")
+            pub_date = datetime.strptime(b["date"], "%b %d, %Y").replace(tzinfo=ZoneInfo("Asia/Jakarta"))
             writing = Writing(
                 title=b["title"],
                 content=b.get("content", ""), 
@@ -289,10 +293,10 @@ def seed_db():
         if writing_objects:
             first_writing = writing_objects[0]
             for c in comments:
-                created_date = datetime.strptime(c["date"], "%b %d, %Y") if "date" in c and c["date"] != "July 25, 2029" else datetime.now() 
+                created_date = datetime.strptime(c["date"], "%b %d, %Y").replace(tzinfo=ZoneInfo("Asia/Jakarta")) if "date" in c and c["date"] != "July 25, 2029" else get_wib_time() 
                 # Fixing the date parsing for "July 25" which doesn't match "%b" easily without careful handling
                 if c["date"] == "July 25, 2029":
-                    created_date = datetime.strptime("Jul 25, 2029", "%b %d, %Y")
+                    created_date = datetime.strptime("Jul 25, 2029", "%b %d, %Y").replace(tzinfo=ZoneInfo("Asia/Jakarta"))
                 
                 comment = Comment(
                     writing_id=first_writing.id,

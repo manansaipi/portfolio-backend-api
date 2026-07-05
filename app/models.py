@@ -3,7 +3,11 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import sqlalchemy
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import uuid
+
+def get_wib_time():
+    return datetime.now(ZoneInfo("Asia/Jakarta"))
 
 from .database import Base
 
@@ -18,7 +22,7 @@ class Project(Base):
     description = Column(Text, nullable=True)
     url = Column(String(255), nullable=True)
     technologies = Column(String(255), nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=get_wib_time)
 
 class Experience(Base):
     __tablename__ = "experiences"
@@ -42,7 +46,7 @@ class Writing(Base):
     id = Column(String(36), primary_key=True, default=generate_uuid)
     title = Column(String(255), nullable=False)
     content = Column(Text, nullable=True)
-    published_at = Column(DateTime, default=datetime.utcnow)
+    published_at = Column(DateTime(timezone=True), default=get_wib_time)
     author = Column(String(255), nullable=True)
     author_img = Column(String(255), nullable=True)
     image = Column(String(500), nullable=True)
@@ -59,7 +63,7 @@ class Comment(Base):
     parent_id = Column(String(36), ForeignKey("comments.id", ondelete="CASCADE"), nullable=True)
     username = Column(String(100), nullable=False)
     content = Column(Text, nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(DateTime(timezone=True), default=get_wib_time)
     profile_img = Column(String(255), nullable=True)
     likes = Column(Integer, default=0)
     is_author = Column(Boolean, default=False)
