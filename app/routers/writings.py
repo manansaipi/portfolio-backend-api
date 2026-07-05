@@ -20,7 +20,7 @@ def create_writing(writing: schemas.WritingCreate, db: Session = Depends(databas
 
 @router.get("/", response_model=List[schemas.Writing])
 def get_writings(skip: int = 0, limit: int = 100, db: Session = Depends(database.get_db)):
-    return db.query(models.Writing).order_by(models.Writing.published_at.desc()).offset(skip).limit(limit).all()
+    return db.query(models.Writing).order_by(models.Writing.order.is_(None), models.Writing.order.asc(), models.Writing.published_at.desc()).offset(skip).limit(limit).all()
 
 @router.put("/{writing_id}", response_model=schemas.Writing)
 def update_writing(writing_id: str, writing_update: schemas.WritingUpdate, db: Session = Depends(database.get_db), current_user: str = Depends(get_current_admin)):

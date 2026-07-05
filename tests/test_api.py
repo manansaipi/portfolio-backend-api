@@ -31,13 +31,13 @@ def setup_database():
 
 @pytest.fixture
 def auth_headers():
-    response = client.post("/api/auth/login", data={"username": "admin", "password": "adminboben"})
+    response = client.post("/api/auth/login", data={"username": "admin", "password": "adminboben2026"})
     token = response.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
 
 # --- Auth Tests ---
 def test_login_success():
-    response = client.post("/api/auth/login", data={"username": "admin", "password": "adminboben"})
+    response = client.post("/api/auth/login", data={"username": "admin", "password": "adminboben2026"})
     assert response.status_code == 200
     assert "access_token" in response.json()
 

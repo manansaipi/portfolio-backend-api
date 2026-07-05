@@ -20,7 +20,7 @@ def create_experience(experience: schemas.ExperienceCreate, db: Session = Depend
 
 @router.get("/", response_model=List[schemas.Experience])
 def get_experiences(skip: int = 0, limit: int = 100, db: Session = Depends(database.get_db)):
-    return db.query(models.Experience).order_by(models.Experience.start_date.desc()).offset(skip).limit(limit).all()
+    return db.query(models.Experience).order_by(models.Experience.order.is_(None), models.Experience.order.asc(), models.Experience.start_date.desc()).offset(skip).limit(limit).all()
 
 @router.put("/{experience_id}", response_model=schemas.Experience)
 def update_experience(experience_id: str, experience_update: schemas.ExperienceUpdate, db: Session = Depends(database.get_db), current_user: str = Depends(get_current_admin)):

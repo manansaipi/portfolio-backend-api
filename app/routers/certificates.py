@@ -20,4 +20,4 @@ def create_certificate(certificate: schemas.CertificateCreate, db: Session = Dep
 
 @router.get("/", response_model=List[schemas.Certificate])
 def get_certificates(skip: int = 0, limit: int = 100, db: Session = Depends(database.get_db)):
-    return db.query(models.Certificate).offset(skip).limit(limit).all()
+    return db.query(models.Certificate).order_by(models.Certificate.order.is_(None), models.Certificate.order.asc(), models.Certificate.id.desc()).offset(skip).limit(limit).all()

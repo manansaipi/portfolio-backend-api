@@ -32,6 +32,7 @@ class ExperienceBase(BaseModel):
     images: Optional[str] = None
     bg_color: Optional[str] = None
     url: Optional[str] = None
+    order: Optional[int] = None
 
 class ExperienceCreate(ExperienceBase):
     pass
@@ -47,6 +48,7 @@ class ExperienceUpdate(BaseModel):
     images: Optional[str] = None
     bg_color: Optional[str] = None
     url: Optional[str] = None
+    order: Optional[int] = None
 
 class Experience(ExperienceBase):
     id: str
@@ -89,6 +91,7 @@ class WritingBase(BaseModel):
     author: Optional[str] = None
     author_img: Optional[str] = None
     image: Optional[str] = None
+    order: Optional[int] = None
 
 class WritingCreate(WritingBase):
     pass
@@ -99,6 +102,7 @@ class WritingUpdate(BaseModel):
     author: Optional[str] = None
     author_img: Optional[str] = None
     image: Optional[str] = None
+    order: Optional[int] = None
 
 class Writing(WritingBase):
     id: str
@@ -121,6 +125,7 @@ class CertificateBase(BaseModel):
     img: Optional[str] = None
     bg_color: Optional[str] = None
     link: Optional[str] = None
+    order: Optional[int] = None
 
 class CertificateCreate(CertificateBase):
     pass

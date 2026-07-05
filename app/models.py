@@ -34,6 +34,7 @@ class Experience(Base):
     images = Column(Text, nullable=True) # Stored as JSON string
     bg_color = Column(String(50), nullable=True)
     url = Column(String(255), nullable=True)
+    order = Column(Integer, nullable=True)
 
 class Writing(Base):
     __tablename__ = "writings"
@@ -45,6 +46,7 @@ class Writing(Base):
     author = Column(String(255), nullable=True)
     author_img = Column(String(255), nullable=True)
     image = Column(String(500), nullable=True)
+    order = Column(Integer, nullable=True)
     
     comments = relationship("Comment", back_populates="writing", cascade="all, delete-orphan")
 
@@ -78,3 +80,4 @@ class Certificate(Base):
     img = Column(String(255), nullable=True)
     bg_color = Column(String(50), nullable=True)
     link = Column(String(500), nullable=True)
+    order = Column(Integer, nullable=True)
