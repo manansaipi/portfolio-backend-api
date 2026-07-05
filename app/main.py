@@ -22,6 +22,10 @@ app.add_middleware(
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+@app.get("/")
+def read_root():
+    return {"message": "Hello! The Portfolio Backend API is up and running."}
+
 # Include routers
 app.include_router(auth.router)
 app.include_router(projects.router)
