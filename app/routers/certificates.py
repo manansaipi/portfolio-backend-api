@@ -21,3 +21,28 @@ def create_certificate(certificate: schemas.CertificateCreate, db: Session = Dep
 @router.get("/", response_model=List[schemas.Certificate])
 def get_certificates(skip: int = 0, limit: int = 100, db: Session = Depends(database.get_db)):
     return db.query(models.Certificate).order_by(models.Certificate.order.is_(None), models.Certificate.order.asc(), models.Certificate.id.desc()).offset(skip).limit(limit).all()
+
+@router.put("/{id}", response_model=schemas.Certificate)
+def update_certificate(id: int, certificate: schemas.CertificateCreate, db: Session = Depends(database.get_db), current_user: str = Depends(get_current_admin)):
+    db_certificate = db.query(models.Certificate).filter(models.Certificate.id == id).first()
+    if not db_certificate:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Certificate not found")
+    
+    for key, value in certificate.model_dump().items():
+        setattr(db_certificate, key, value)
+    
+    db.commit()
+    db.refresh(db_certificate)
+    return db_certificate
+
+@router.delete("/{id}")
+def delete_certificate(id: int, db: Session = Depends(database.get_db), current_user: str = Depends(get_current_admin)):
+    db_certificate = db.query(models.Certificate).filter(models.Certificate.id == id).first()
+    if not db_certificate:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Certificate not found")
+    
+    db.delete(db_certificate)
+    db.commit()
+    return {"message": "Certificate deleted successfully"}
