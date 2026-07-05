@@ -1,10 +1,15 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
-from .routers import projects, experiences, writings, comments, certificates, upload
+from .rate_limiter import limiter
+from .routers import projects, experiences, writings, comments, certificates, upload, auth
 
 app = FastAPI(title="Portfolio Backend API")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Configure CORS
 app.add_middleware(
@@ -18,6 +23,7 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Include routers
+app.include_router(auth.router)
 app.include_router(projects.router)
 app.include_router(experiences.router)
 app.include_router(writings.router)

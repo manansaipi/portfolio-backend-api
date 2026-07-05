@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from .. import models, schemas, database
+from ..auth import get_current_admin
 
 router = APIRouter(
     prefix="/api/certificates",
@@ -10,7 +11,7 @@ router = APIRouter(
 )
 
 @router.post("/", response_model=schemas.Certificate, status_code=status.HTTP_201_CREATED)
-def create_certificate(certificate: schemas.CertificateCreate, db: Session = Depends(database.get_db)):
+def create_certificate(certificate: schemas.CertificateCreate, db: Session = Depends(database.get_db), current_user: str = Depends(get_current_admin)):
     db_certificate = models.Certificate(**certificate.model_dump())
     db.add(db_certificate)
     db.commit()

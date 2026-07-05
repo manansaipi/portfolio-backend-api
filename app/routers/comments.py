@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from typing import List
 
 from .. import models, schemas, database
+from ..auth import get_current_admin
+from ..rate_limiter import limiter
 
 # Note: Some comment endpoints are nested under writings, e.g., /api/writings/{writing_id}/comments
 # We will define them here but they can be included on the main app or the writings router.
@@ -13,7 +15,8 @@ router = APIRouter(
 )
 
 @router.post("/api/writings/{writing_id}/comments", response_model=schemas.Comment, status_code=status.HTTP_201_CREATED)
-def create_comment(writing_id: str, comment: schemas.CommentCreate, db: Session = Depends(database.get_db)):
+@limiter.limit("5/minute")
+def create_comment(request: Request, writing_id: str, comment: schemas.CommentCreate, db: Session = Depends(database.get_db)):
     # Verify writing exists
     db_writing = db.query(models.Writing).filter(models.Writing.id == writing_id).first()
     if not db_writing:
@@ -82,7 +85,7 @@ def like_comment(comment_id: str, db: Session = Depends(database.get_db)):
     return db_comment
 
 @router.delete("/api/comments/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_comment(comment_id: str, db: Session = Depends(database.get_db)):
+def delete_comment(comment_id: str, db: Session = Depends(database.get_db), current_user: str = Depends(get_current_admin)):
     db_comment = db.query(models.Comment).filter(models.Comment.id == comment_id).first()
     if not db_comment:
         raise HTTPException(status_code=404, detail="Comment not found")

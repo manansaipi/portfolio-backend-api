@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from .. import models, schemas, database
+from ..auth import get_current_admin
 
 router = APIRouter(
     prefix="/api/writings",
@@ -10,7 +11,7 @@ router = APIRouter(
 )
 
 @router.post("/", response_model=schemas.Writing, status_code=status.HTTP_201_CREATED)
-def create_writing(writing: schemas.WritingCreate, db: Session = Depends(database.get_db)):
+def create_writing(writing: schemas.WritingCreate, db: Session = Depends(database.get_db), current_user: str = Depends(get_current_admin)):
     db_writing = models.Writing(**writing.model_dump())
     db.add(db_writing)
     db.commit()
@@ -22,7 +23,7 @@ def get_writings(skip: int = 0, limit: int = 100, db: Session = Depends(database
     return db.query(models.Writing).order_by(models.Writing.published_at.desc()).offset(skip).limit(limit).all()
 
 @router.put("/{writing_id}", response_model=schemas.Writing)
-def update_writing(writing_id: str, writing_update: schemas.WritingUpdate, db: Session = Depends(database.get_db)):
+def update_writing(writing_id: str, writing_update: schemas.WritingUpdate, db: Session = Depends(database.get_db), current_user: str = Depends(get_current_admin)):
     db_writing = db.query(models.Writing).filter(models.Writing.id == writing_id).first()
     if not db_writing:
         raise HTTPException(status_code=404, detail="Writing not found")
@@ -36,7 +37,7 @@ def update_writing(writing_id: str, writing_update: schemas.WritingUpdate, db: S
     return db_writing
 
 @router.delete("/{writing_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_writing(writing_id: str, db: Session = Depends(database.get_db)):
+def delete_writing(writing_id: str, db: Session = Depends(database.get_db), current_user: str = Depends(get_current_admin)):
     db_writing = db.query(models.Writing).filter(models.Writing.id == writing_id).first()
     if not db_writing:
         raise HTTPException(status_code=404, detail="Writing not found")

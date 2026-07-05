@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
-from app.database import SessionLocal
-from app.models import Writing, Certificate, Comment, Experience
+from app.database import SessionLocal, engine
+from app.models import Writing, Certificate, Comment, Experience, Base
 
 blogs = [
 	{
@@ -217,6 +217,7 @@ works = [
 ]
 
 def seed_db():
+    Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     
     try:
@@ -289,6 +290,7 @@ def seed_db():
                     content=c["comment"],
                     profile_img=c["profileImg"],
                     likes=c["totalLikes"],
+                    is_author=(c["name"] == "Abdul Mannan Saipi"),
                     created_at=created_date
                 )
                 db.add(comment)

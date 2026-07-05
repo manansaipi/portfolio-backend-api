@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Text, Date, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, Date, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 import sqlalchemy
 from datetime import datetime
 import uuid
@@ -55,9 +56,10 @@ class Comment(Base):
     parent_id = Column(String(36), ForeignKey("comments.id", ondelete="CASCADE"), nullable=True)
     username = Column(String(100), nullable=False)
     content = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
     profile_img = Column(String(255), nullable=True)
     likes = Column(Integer, default=0)
+    is_author = Column(Boolean, default=False)
     
     writing = relationship("Writing", back_populates="comments")
     replies = relationship(
