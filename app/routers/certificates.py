@@ -23,7 +23,7 @@ def get_certificates(skip: int = 0, limit: int = 100, db: Session = Depends(data
     return db.query(models.Certificate).order_by(models.Certificate.order.is_(None), models.Certificate.order.asc(), models.Certificate.id.desc()).offset(skip).limit(limit).all()
 
 @router.put("/{id}", response_model=schemas.Certificate)
-def update_certificate(id: int, certificate: schemas.CertificateCreate, db: Session = Depends(database.get_db), current_user: str = Depends(get_current_admin)):
+def update_certificate(id: str, certificate: schemas.CertificateCreate, db: Session = Depends(database.get_db), current_user: str = Depends(get_current_admin)):
     db_certificate = db.query(models.Certificate).filter(models.Certificate.id == id).first()
     if not db_certificate:
         from fastapi import HTTPException
@@ -37,7 +37,7 @@ def update_certificate(id: int, certificate: schemas.CertificateCreate, db: Sess
     return db_certificate
 
 @router.delete("/{id}")
-def delete_certificate(id: int, db: Session = Depends(database.get_db), current_user: str = Depends(get_current_admin)):
+def delete_certificate(id: str, db: Session = Depends(database.get_db), current_user: str = Depends(get_current_admin)):
     db_certificate = db.query(models.Certificate).filter(models.Certificate.id == id).first()
     if not db_certificate:
         from fastapi import HTTPException
