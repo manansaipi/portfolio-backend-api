@@ -6,6 +6,10 @@ from slowapi.errors import RateLimitExceeded
 
 from .rate_limiter import limiter
 from .routers import projects, experiences, writings, comments, certificates, upload, auth
+from .database import engine, Base
+
+# Create all tables in the database automatically on startup
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Portfolio Backend API")
 app.state.limiter = limiter

@@ -271,28 +271,6 @@ def seed_db():
             
         db.commit()
         
-        # 4. Seed Comments
-        # We'll attach the provided comments to the first blog
-        if writing_objects:
-            first_writing = writing_objects[0]
-            for c in comments:
-                created_date = datetime.strptime(c["date"], "%b %d, %Y").replace(tzinfo=ZoneInfo("Asia/Jakarta")) if "date" in c and c["date"] != "July 25, 2029" else get_wib_time() 
-                # Fixing the date parsing for "July 25" which doesn't match "%b" easily without careful handling
-                if c["date"] == "July 25, 2029":
-                    created_date = datetime.strptime("Jul 25, 2029", "%b %d, %Y").replace(tzinfo=ZoneInfo("Asia/Jakarta"))
-                
-                comment = Comment(
-                    writing_id=first_writing.id,
-                    username=c["name"],
-                    content=c["comment"],
-                    profile_img=c["profileImg"],
-                    likes=c["totalLikes"],
-                    is_author=(c["name"] == "Abdul Mannan Saipi"),
-                    created_at=created_date
-                )
-                db.add(comment)
-        
-        db.commit()
         print("Successfully seeded the database!")
         
     except Exception as e:
