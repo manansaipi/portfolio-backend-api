@@ -137,3 +137,33 @@ class Certificate(CertificateBase):
 
     class Config:
         from_attributes = True
+
+# --- Terminal Log Schemas ---
+class TerminalLogCreate(BaseModel):
+    input_text: str
+    is_ai_mode: bool = False
+    response_text: Optional[str] = None
+    execution_time_ms: Optional[int] = None
+    screen_width: Optional[int] = None
+    screen_height: Optional[int] = None
+    language: Optional[str] = None
+    referrer: Optional[str] = None
+
+class TerminalLogResponse(BaseModel):
+    id: str
+    input_text: str
+    is_ai_mode: bool
+    response_text: Optional[str] = None
+    ip_address: Optional[str] = None
+    user_agent: Optional[str] = None
+    execution_time_ms: Optional[int] = None
+    country: Optional[str] = None
+    city: Optional[str] = None
+    screen_width: Optional[int] = None
+    screen_height: Optional[int] = None
+    language: Optional[str] = None
+    referrer: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
