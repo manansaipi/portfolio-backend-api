@@ -5,7 +5,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from .rate_limiter import limiter
-from .routers import projects, experiences, writings, comments, certificates, upload, auth, terminal_logs
+from .routers import projects, experiences, writings, comments, certificates, upload, auth, terminal_logs, ai
 
 app = FastAPI(title="Portfolio Backend API")
 app.state.limiter = limiter
@@ -35,3 +35,4 @@ app.include_router(comments.router)
 app.include_router(certificates.router)
 app.include_router(upload.router)
 app.include_router(terminal_logs.router)
+app.include_router(ai.router)

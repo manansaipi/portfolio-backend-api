@@ -68,3 +68,5 @@ watchfiles
 websockets
 wrapt==2.2.2
 zipp
+google-generativeai==0.8.6
+google-generativeai==0.8.6
