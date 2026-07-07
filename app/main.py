@@ -5,7 +5,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from .rate_limiter import limiter
-from .routers import projects, experiences, writings, comments, certificates, upload, auth
+from .routers import projects, experiences, writings, comments, certificates, upload, auth, terminal_logs
 from .database import engine, Base
 
 # Create all tables in the database automatically on startup
@@ -38,3 +38,4 @@ app.include_router(writings.router)
 app.include_router(comments.router)
 app.include_router(certificates.router)
 app.include_router(upload.router)
+app.include_router(terminal_logs.router)
