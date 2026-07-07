@@ -86,3 +86,21 @@ class Certificate(Base):
     bg_color = Column(String(50), nullable=True)
     link = Column(String(500), nullable=True)
     order = Column(Integer, nullable=True)
+
+class TerminalLog(Base):
+    __tablename__ = "terminal_logs"
+    
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    input_text = Column(Text, nullable=False)
+    is_ai_mode = Column(Boolean, default=False)
+    response_text = Column(Text, nullable=True)
+    ip_address = Column(String(255), nullable=True)
+    user_agent = Column(Text, nullable=True)
+    execution_time_ms = Column(Integer, nullable=True)
+    country = Column(String(100), nullable=True)
+    city = Column(String(100), nullable=True)
+    screen_width = Column(Integer, nullable=True)
+    screen_height = Column(Integer, nullable=True)
+    language = Column(String(50), nullable=True)
+    referrer = Column(String(500), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=get_wib_time)
