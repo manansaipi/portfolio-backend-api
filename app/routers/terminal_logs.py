@@ -56,10 +56,38 @@ def create_terminal_log(log: schemas.TerminalLogCreate, request: Request, backgr
     background_tasks.add_task(fetch_location, db_log.id, ip_address, db)
     return db_log
 
+@router.get("/countries", response_model=List[str])
+def get_terminal_countries(db: Session = Depends(get_db), current_admin: str = Depends(get_current_admin)):
+    countries = db.query(models.TerminalLog.country).filter(models.TerminalLog.country.isnot(None)).distinct().all()
+    return sorted([c[0] for c in countries if c[0]])
+
 @router.get("/", response_model=schemas.TerminalLogPaginatedResponse)
-def read_terminal_logs(skip: int = 0, limit: int = 50, db: Session = Depends(get_db), current_admin: str = Depends(get_current_admin)):
-    total = db.query(models.TerminalLog).count()
-    logs = db.query(models.TerminalLog).order_by(models.TerminalLog.created_at.desc()).offset(skip).limit(limit).all()
+def read_terminal_logs(
+    skip: int = 0, 
+    limit: int = 50, 
+    search: str = None,
+    is_ai_mode: str = None,
+    country: str = None,
+    db: Session = Depends(get_db), 
+    current_admin: str = Depends(get_current_admin)
+):
+    query = db.query(models.TerminalLog)
+    
+    if search:
+        search_term = f"%{search}%"
+        query = query.filter(
+            models.TerminalLog.input_text.ilike(search_term) | 
+            models.TerminalLog.response_text.ilike(search_term)
+        )
+    
+    if is_ai_mode is not None and is_ai_mode != "all":
+        query = query.filter(models.TerminalLog.is_ai_mode == (is_ai_mode.lower() == "true" or is_ai_mode == "ai"))
+        
+    if country and country != "all":
+        query = query.filter(models.TerminalLog.country == country)
+
+    total = query.count()
+    logs = query.order_by(models.TerminalLog.created_at.desc()).offset(skip).limit(limit).all()
     return {"total": total, "items": logs}
 
 @router.delete("/")
