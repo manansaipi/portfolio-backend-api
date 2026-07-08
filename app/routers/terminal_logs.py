@@ -53,7 +53,14 @@ def create_terminal_log(log: schemas.TerminalLogCreate, request: Request, backgr
     background_tasks.add_task(fetch_location, db_log.id, ip_address, db)
     return db_log
 
-@router.get("/", response_model=List[schemas.TerminalLogResponse])
-def read_terminal_logs(db: Session = Depends(get_db), current_admin: str = Depends(get_current_admin)):
-    logs = db.query(models.TerminalLog).order_by(models.TerminalLog.created_at.desc()).all()
-    return logs
+@router.get("/", response_model=schemas.TerminalLogPaginatedResponse)
+def read_terminal_logs(skip: int = 0, limit: int = 50, db: Session = Depends(get_db), current_admin: str = Depends(get_current_admin)):
+    total = db.query(models.TerminalLog).count()
+    logs = db.query(models.TerminalLog).order_by(models.TerminalLog.created_at.desc()).offset(skip).limit(limit).all()
+    return {"total": total, "items": logs}
+
+@router.delete("/")
+def delete_terminal_logs(payload: schemas.DeleteLogsRequest, db: Session = Depends(get_db), current_admin: str = Depends(get_current_admin)):
+    db.query(models.TerminalLog).filter(models.TerminalLog.id.in_(payload.log_ids)).delete(synchronize_session=False)
+    db.commit()
+    return {"message": f"Successfully deleted {len(payload.log_ids)} logs"}

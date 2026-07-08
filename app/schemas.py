@@ -167,3 +167,11 @@ class TerminalLogResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class DeleteLogsRequest(BaseModel):
+    log_ids: List[str]
+
+class TerminalLogPaginatedResponse(BaseModel):
+    total: int
+    items: List[TerminalLogResponse]
+

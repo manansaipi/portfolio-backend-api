@@ -25,7 +25,7 @@ Role: Software Engineer
 Experience Level: Over 2 years of professional experience
 Location: Central Jakarta, Indonesia
 Contact: abdulmannan.saipi@gmail.com
-Nicknames: Close family and friends call him "Boben" (nama rumahan / home name). If anyone asks who Boben is, you can answer that it is Abdul Mannan Saipi's nickname used by his close family and friends.
+Nicknames: Close family and friends call him "Boben" or 'ben' (nama rumahan / home name). If anyone asks who Boben is, you can answer that it is Abdul Mannan Saipi's nickname used by his close family and friends.
 
 Experience:
 1. Software Engineer at SAMSUNG R&D Indonesia (Dec 2025 - Present)
