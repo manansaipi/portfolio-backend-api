@@ -14,14 +14,11 @@ from app import schemas
 
 # Setup database for testing (WARNING: This will drop tables in defaultdb!)
 # To avoid data loss, ideally use a separate test database on the server.
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
-if not SQLALCHEMY_DATABASE_URL:
-    raise ValueError("DATABASE_URL environment variable is not set")
+SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, 
-    connect_args={"ssl": {}},
-    pool_pre_ping=True,
-    pool_recycle=1800
+    connect_args={"check_same_thread": False},
+    pool_pre_ping=True
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
