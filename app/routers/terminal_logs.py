@@ -27,7 +27,10 @@ def fetch_location(log_id: str, ip_address: str, db: Session):
     except Exception:
         pass
 
+from ..rate_limiter import limiter
+
 @router.post("/", response_model=schemas.TerminalLogResponse)
+@limiter.limit("30/minute")
 def create_terminal_log(log: schemas.TerminalLogCreate, request: Request, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     # Try to get the real IP if behind a proxy
     forwarded_for = request.headers.get("X-Forwarded-For")
