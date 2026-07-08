@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 
-from .. import models, schemas, database
-from ..auth import get_current_admin
+from app import models, schemas
+from app.core import database
+from app.core.auth import get_current_admin
 
 router = APIRouter(
     prefix="/api/experiences",

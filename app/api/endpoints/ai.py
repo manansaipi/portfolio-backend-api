@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from google import genai
 from google.genai import types
 
-from ..rate_limiter import limiter
+from app.core.rate_limiter import limiter
 
 router = APIRouter(
     prefix="/api/ai",
@@ -25,6 +25,10 @@ Role: Software Engineer
 Experience Level: Over 2 years of professional experience
 Location: Central Jakarta, Indonesia
 Contact: abdulmannan.saipi@gmail.com
+Social Links:
+- LinkedIn: https://www.linkedin.com/in/abdulmannansaipi
+- GitHub: https://github.com/manansaipi
+- Instagram: https://www.instagram.com/manansaipi
 Nicknames: Close family and friends call him "Boben" or 'ben' (nama rumahan / home name). If anyone asks who Boben is, you can answer that it is Abdul Mannan Saipi's nickname used by his close family and friends.
 
 Experience:

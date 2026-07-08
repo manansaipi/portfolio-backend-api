@@ -4,9 +4,9 @@ from fastapi.staticfiles import StaticFiles
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
-from .rate_limiter import limiter
-from .routers import projects, experiences, writings, comments, certificates, upload, auth, terminal_logs, ai
-from .database import engine, Base
+from app.core.rate_limiter import limiter
+from app.api.endpoints import projects, experiences, writings, comments, certificates, upload, auth, terminal_logs, ai
+from app.core.database import engine, Base
 
 # Create all tables in the database automatically on startup
 Base.metadata.create_all(bind=engine)

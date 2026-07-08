@@ -4,9 +4,9 @@ from typing import List
 import urllib.request
 import json
 
-from .. import models, schemas
-from ..database import get_db
-from ..auth import get_current_admin
+from app import models, schemas
+from app.core.database import get_db
+from app.core.auth import get_current_admin
 
 router = APIRouter(
     prefix="/api/terminal/logs",
@@ -27,7 +27,7 @@ def fetch_location(log_id: str, ip_address: str, db: Session):
     except Exception:
         pass
 
-from ..rate_limiter import limiter
+from app.core.rate_limiter import limiter
 
 @router.post("/", response_model=schemas.TerminalLogResponse)
 @limiter.limit("30/minute")

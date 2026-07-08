@@ -1,6 +1,6 @@
 import os
 from fastapi import APIRouter, UploadFile, File, Depends
-from ..auth import get_current_admin
+from app.core.auth import get_current_admin
 
 router = APIRouter(
     prefix="/api",

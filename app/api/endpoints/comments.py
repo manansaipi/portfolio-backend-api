@@ -2,9 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from typing import List
 
-from .. import models, schemas, database
-from ..auth import get_current_admin, get_optional_current_admin
-from ..rate_limiter import limiter
+from app import models, schemas
+from app.core import database
+from app.core.auth import get_current_admin, get_optional_current_admin
+from app.core.rate_limiter import limiter
 
 # Note: Some comment endpoints are nested under writings, e.g., /api/writings/{writing_id}/comments
 # We will define them here but they can be included on the main app or the writings router.

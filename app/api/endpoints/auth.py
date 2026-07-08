@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
 
-from .. import auth
+from app.core import auth
 
 router = APIRouter(
     prefix="/api/auth",
