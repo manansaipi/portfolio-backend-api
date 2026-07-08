@@ -1,8 +1,9 @@
 import json
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from app.database import SessionLocal, engine
-from app.models import Writing, Certificate, Comment, Experience, Base
+from app.core.database import SessionLocal, engine
+from app.models import Writing, Certificate, Comment, Experience
+from app.core.database import Base
 
 blogs = [
 	{
