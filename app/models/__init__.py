@@ -4,3 +4,5 @@ from .writing import Writing
 from .comment import Comment
 from .certificate import Certificate
 from .terminal_log import TerminalLog
+from .user import User
+from .favorite import Favorite
