@@ -18,13 +18,13 @@ class Writing(Base):
     __tablename__ = "writings"
     
     id = Column(String(36), primary_key=True, default=generate_uuid)
-    title = Column(String(255), nullable=False)
+    title = Column(String(255), nullable=False, index=True)
     content = Column(Text, nullable=True)
-    published_at = Column(DateTime(timezone=True), default=get_wib_time)
+    published_at = Column(DateTime(timezone=True), default=get_wib_time, index=True)
     author = Column(String(255), nullable=True)
     author_img = Column(String(255), nullable=True)
     image = Column(String(500), nullable=True)
     images = Column(Text, nullable=True) # Stored as JSON string
-    order = Column(Integer, nullable=True)
+    order = Column(Integer, nullable=True, index=True)
     
     comments = relationship("Comment", back_populates="writing", cascade="all, delete-orphan")

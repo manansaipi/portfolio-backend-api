@@ -18,7 +18,7 @@ class Experience(Base):
     __tablename__ = "experiences"
     
     id = Column(String(36), primary_key=True, default=generate_uuid)
-    company = Column(String(255), nullable=False)
+    company = Column(String(255), nullable=False, index=True)
     position = Column(String(255), nullable=False)
     start_date = Column(String(50), nullable=False)
     end_date = Column(String(50), nullable=True)
@@ -28,4 +28,4 @@ class Experience(Base):
     images = Column(Text, nullable=True) # Stored as JSON string
     bg_color = Column(String(50), nullable=True)
     url = Column(String(255), nullable=True)
-    order = Column(Integer, nullable=True)
+    order = Column(Integer, nullable=True, index=True)

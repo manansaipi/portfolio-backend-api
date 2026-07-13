@@ -4,6 +4,9 @@ class UserAuth(BaseModel):
     user_name: str
     password: str
 
+class UserCreateAdmin(UserAuth):
+    is_admin: bool = False
+
 class UserInDB(BaseModel):
     id: int
     user_name: str
