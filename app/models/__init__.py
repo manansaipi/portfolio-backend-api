@@ -1,3 +1,4 @@
+from app.core.database import Base
 from .project import Project
 from .experience import Experience
 from .writing import Writing
@@ -6,3 +7,4 @@ from .certificate import Certificate
 from .terminal_log import TerminalLog
 from .user import User
 from .favorite import Favorite
+from .guestbook import Guestbook

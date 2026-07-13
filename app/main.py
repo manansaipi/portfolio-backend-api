@@ -6,7 +6,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from app.core.rate_limiter import limiter
-from app.api.endpoints import projects, experiences, writings, comments, certificates, upload, auth, terminal_logs, ai, users, favorites
+from app.api.endpoints import projects, experiences, writings, comments, certificates, upload, auth, terminal_logs, ai, users, favorites, guestbook
 from app.core.database import engine, Base
 
 # Create all tables in the database automatically on startup
@@ -44,3 +44,4 @@ app.include_router(terminal_logs.router)
 app.include_router(ai.router)
 app.include_router(users.router)
 app.include_router(favorites.router)
+app.include_router(guestbook.router, prefix="/api/guestbook", tags=["Guestbook"])
