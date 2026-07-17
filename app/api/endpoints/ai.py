@@ -54,7 +54,11 @@ Skills:
 - AI & Data: TensorFlow, Machine Learning, Power BI
 
 Projects:
+- Personal Portfolio: A thoughtfully crafted portfolio showcasing my journey as a software engineer — featuring smooth animations, an AI-powered terminal, and a full-stack blog system. Built with React, Tailwind CSS, GSAP, FastAPI, MySQL.
 - AudioVision: Real-Time Object Detection Mobile App using YOLOv8 & TensorFlow Lite.
+- Netflix Clone: A full-featured Netflix clone allowing users to search and discover movies seamlessly using the TMDB API, featuring custom interactive animations and a robust FastAPI backend.
+- To-Do List App: A powerful mobile productivity application featuring location-based tracking, smart notifications, and an intuitive timeline view. Built with Flutter and Google Maps.
+- Roti Li Doku: A premium bakery landing page with canvas image sequence animations, seamless scroll effects, and modern aesthetics.
 - Serfee API: RESTful backend on GCP Cloud Run and App Engine.
 - Ticketing Web App v2: Laravel app with Telegram chatbot integration.
 """
