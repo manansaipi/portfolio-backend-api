@@ -1,29 +1,9 @@
-from fastapi import APIRouter, HTTPException
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
 import os
 import base64
 import struct
 from google import genai
 from elevenlabs.client import ElevenLabs
 from .constants import GEMINI_TTS_MODELS, ELEVENLABS_VOICE_IDS
-
-router = APIRouter()
-
-class TTSRequest(BaseModel):
-    text: str
-    
-@router.post("/generate")
-async def generate_speech(request: TTSRequest):
-    result = _generate_gemini_tts(request.text)
-    if result:
-        return result
-        
-    result = _generate_elevenlabs_tts(request.text)
-    if result:
-        return result
-        
-    raise HTTPException(status_code=500, detail="Error generating speech with all configured keys and voices")
 
 def _generate_gemini_tts(text: str):
     gemini_key1 = os.getenv("GEMINI_API_KEY")
