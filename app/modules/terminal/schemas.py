@@ -39,3 +39,6 @@ class DeleteLogsRequest(BaseModel):
 class TerminalLogPaginatedResponse(BaseModel):
     total: int
     items: List[TerminalLogResponse]
+
+class AIRequest(BaseModel):
+    question: str
