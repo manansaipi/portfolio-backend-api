@@ -1,1 +1,44 @@
-Generic single-database configuration.
+# Alembic Database Migrations
+
+This directory contains the database migration scripts for the Portfolio Backend API using [Alembic](https://alembic.sqlalchemy.org/).
+
+## Overview
+Alembic tracks changes to the SQLAlchemy models and applies those changes to the database incrementally. This ensures your database schema stays in sync with your codebase over time without manually executing SQL scripts.
+
+## Common Commands
+
+Run these commands from the root of the `backend` directory.
+
+### 1. Create a New Migration (Autogenerate)
+After making changes to any SQLAlchemy models (e.g. in `app/modules/projects/models.py`), generate a new migration script automatically:
+
+```bash
+alembic revision --autogenerate -m "Add short description of your changes"
+```
+*Note: Always review the generated script in `alembic/versions/` to ensure Alembic caught all your model changes correctly.*
+
+### 2. Apply Migrations to the Database
+To apply all pending migrations and update your database schema to the latest version:
+
+```bash
+alembic upgrade head
+```
+
+### 3. Rollback Migrations
+If you need to undo the last migration:
+
+```bash
+alembic downgrade -1
+```
+
+### 4. View Migration History
+To see the current state of the database and the migration history:
+
+```bash
+alembic history
+```
+
+## Directory Structure
+- `env.py`: The Python script run by Alembic whenever a migration is invoked. It connects to the database and provides the model metadata.
+- `script.py.mako`: The template used to generate new migration scripts.
+- `versions/`: This folder holds all the actual migration scripts (the version history).
