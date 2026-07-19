@@ -4,9 +4,9 @@ The backend service for Abdul Mannan Saipi's personal portfolio website, built w
 
 ## Features
 
-- **Domain-Driven Architecture**: Structured into `api`, `core`, `models`, and `schemas` for modularity and scalability.
+- **Domain-Driven Architecture**: Structured into feature-based modules inside `app/modules/` (e.g., `projects`, `terminal`, `auth`), encapsulating endpoints, database models, and validation schemas together for high cohesion and scalability.
 - **RESTful Endpoints**: CRUD operations for Projects, Experiences, Writings, Comments, and Certificates.
-- **Interactive AI Endpoint**: Uses Google Gemini to act as a personal assistant representing Abdul Mannan Saipi, answering questions based on provided context.
+- **Interactive AI & TTS**: Uses Google Gemini to act as a personal assistant representing Abdul Mannan Saipi, answering questions based on provided context. Also utilizes ElevenLabs for realistic Text-to-Speech generation.
 - **Terminal Logs**: Tracks, filters, and paginates terminal interactions (including AI mode vs. Standard mode) and logs user metadata (IP, Country, Execution Time) for analytics.
 - **Security & Rate Limiting**: Employs JWT-based authentication for admin routes and SlowAPI for rate limiting to prevent abuse.
 - **Relational Database**: Uses SQLAlchemy ORM to manage interactions with the database (SQLite for local/tests, PostgreSQL in production).
@@ -16,7 +16,8 @@ The backend service for Abdul Mannan Saipi's personal portfolio website, built w
 - **Framework:** FastAPI
 - **Database ORM:** SQLAlchemy
 - **Authentication:** JWT (JSON Web Tokens), Passlib (Bcrypt)
-- **AI Integration:** Google GenAI SDK (Gemini Models)
+- **AI Integration:** Google GenAI SDK (Gemini Models), ElevenLabs (TTS)
+- **Database Migrations:** Alembic
 - **Rate Limiting:** SlowAPI
 - **Testing:** Pytest, HTTPX
 
@@ -60,6 +61,11 @@ The backend service for Abdul Mannan Saipi's personal portfolio website, built w
    # AI Integration
    GEMINI_API_KEY=your_gemini_api_key_here
    GEMINI_API_KEY_2=optional_backup_gemini_api_key_here
+   
+   # Text to Speech Integration
+   ELEVENLABS_API_KEY=your_elevenlabs_api_key_here
+   ELEVENLABS_API_KEY_2=optional_backup_elevenlabs_key
+   ELEVENLABS_API_KEY_3=optional_backup_elevenlabs_key
    ```
 
 ## Running the Application
@@ -80,14 +86,16 @@ Interactive API documentation (Swagger UI) is automatically available at `http:/
 
 ```
 backend/
+├── alembic/              # Database migration scripts
 ├── app/
-│   ├── api/
-│   │   └── endpoints/    # FastAPI routers (projects, comments, ai, etc.)
-│   ├── core/             # Infrastructure logic (auth, database, rate limiter)
-│   ├── models/           # SQLAlchemy database models (domain-driven)
-│   ├── schemas/          # Pydantic validation schemas (domain-driven)
+│   ├── core/             # Infrastructure logic (auth, database, rate limiter, etc.)
+│   ├── modules/          # Feature-based domain modules
+│   │   ├── projects/     # (Each module contains its own router, schemas, and models)
+│   │   ├── terminal/     # Terminal logs, AI responses, and TTS routing
+│   │   └── ...           # (auth, comments, experiences, guestbook, etc.)
 │   └── main.py           # FastAPI application factory and entry point
 ├── tests/                # Pytest unit tests (test_api.py, etc.)
+├── alembic.ini           # Alembic configuration
 ├── requirements.txt      # Python dependencies
 └── .env                  # Environment variables (not tracked in Git)
 ```
