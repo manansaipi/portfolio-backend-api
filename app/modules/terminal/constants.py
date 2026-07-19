@@ -56,3 +56,18 @@ MODELS = [
     "gemini-2.5-flash-lite",
     "gemini-2.5-pro"
 ]
+
+GEMINI_TTS_MODELS = [
+    "gemini-3.1-flash-tts-preview",
+    "gemini-2.5-flash-preview-tts",
+    "gemini-2.5-pro-preview-tts",
+    "gemini-2.5-flash-tts",
+    "gemini-2.5-pro-tts",
+    "gemini-3.1-flash-tts"
+]
+
+ELEVENLABS_VOICE_IDS = [
+    "eFXGlWMynZa1K4PISafj",  # Preferred 1
+    "4GWZV4vKLWkaf0Oxe6W5",  # Preferred 2
+    "pNInz6obpgDQGcFmaJgB"   # Fallback (Adam, free tier compatible)
+]
