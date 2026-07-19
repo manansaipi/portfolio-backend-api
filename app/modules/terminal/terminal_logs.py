@@ -4,7 +4,7 @@ from typing import List
 import urllib.request
 import json
 
-from app import models, schemas
+from . import models, schemas
 from app.core.database import get_db
 from app.core.auth import get_current_admin
 

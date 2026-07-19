@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from typing import List
 
-from app import models, schemas
+from . import models, schemas
+from app.modules.writings.models import Writing
 from app.core import database
 from app.core.auth import get_current_admin, get_optional_current_admin
 from app.core.rate_limiter import limiter
@@ -19,7 +20,7 @@ router = APIRouter(
 @limiter.limit("5/minute")
 def create_comment(request: Request, writing_id: str, comment: schemas.CommentCreate, db: Session = Depends(database.get_db), current_user: str | None = Depends(get_optional_current_admin)):
     # Verify writing exists
-    db_writing = db.query(models.Writing).filter(models.Writing.id == writing_id).first()
+    db_writing = db.query(Writing).filter(Writing.id == writing_id).first()
     if not db_writing:
         raise HTTPException(status_code=404, detail="Writing not found")
         
@@ -46,7 +47,7 @@ def create_comment(request: Request, writing_id: str, comment: schemas.CommentCr
 @router.get("/api/writings/{writing_id}/comments", response_model=List[schemas.Comment])
 def get_comments(writing_id: str, db: Session = Depends(database.get_db)):
     # Verify writing exists
-    db_writing = db.query(models.Writing).filter(models.Writing.id == writing_id).first()
+    db_writing = db.query(Writing).filter(Writing.id == writing_id).first()
     if not db_writing:
         raise HTTPException(status_code=404, detail="Writing not found")
         

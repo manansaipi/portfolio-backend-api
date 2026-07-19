@@ -69,3 +69,4 @@ websockets
 wrapt==2.2.2
 zipp
 google-genai==2.10.0
+elevenlabs

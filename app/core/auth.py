@@ -8,7 +8,7 @@ from passlib.context import CryptContext
 from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.models.user import User
+from app.modules.users.models import User
 
 load_dotenv()
 

@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 
-from app.schemas import favorite as favoriteSchema
-from app.models.favorite import Favorite
-from app.models.user import User
+from . import schemas as favoriteSchema
+from .models import Favorite
+from app.modules.users.models import User
 from app.core.database import get_db
 from app.core import auth
 

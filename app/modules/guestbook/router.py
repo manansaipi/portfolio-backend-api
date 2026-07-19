@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 from typing import List
 from app.core.database import get_db
 from app.core.auth import get_current_admin
-from app.models.guestbook import Guestbook
-from app.schemas.guestbook import GuestbookCreate, GuestbookResponse, GuestbookUpdate
+from app.modules.guestbook.models import Guestbook
+from app.modules.guestbook.schemas import GuestbookCreate, GuestbookResponse, GuestbookUpdate
 
 router = APIRouter()
 

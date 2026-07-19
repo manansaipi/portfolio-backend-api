@@ -10,15 +10,16 @@ from sqlalchemy.orm import sessionmaker
 
 from app.main import app
 from app.core.database import Base, get_db
-from app import schemas
 
 # Setup database for testing (WARNING: This will drop tables in defaultdb!)
 # To avoid data loss, ideally use a separate test database on the server.
+from sqlalchemy.pool import StaticPool
+
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, 
     connect_args={"check_same_thread": False},
-    pool_pre_ping=True
+    poolclass=StaticPool,
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -32,15 +33,28 @@ def override_get_db():
 app.dependency_overrides[get_db] = override_get_db
 client = TestClient(app)
 
+from app.modules.users.models import User
+from app.core.auth import get_password_hash
+
 @pytest.fixture(autouse=True)
 def setup_database():
     Base.metadata.create_all(bind=engine)
+    db = TestingSessionLocal()
+    admin_user = User(
+        user_name="admin",
+        hashed_password=get_password_hash("adminboben2026"),
+        is_admin=True
+    )
+    db.add(admin_user)
+    db.commit()
+    db.close()
     yield
     Base.metadata.drop_all(bind=engine)
 
 @pytest.fixture
 def auth_headers():
     response = client.post("/api/auth/login", data={"username": "admin", "password": "adminboben2026"})
+    print("LOGIN:", response.json())
     token = response.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
 

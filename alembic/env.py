@@ -17,7 +17,16 @@ if config.config_file_name is not None:
 import sys
 import os
 sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '..')))
-from app.models import Base
+from app.core.database import Base
+from app.modules.projects.models import Project
+from app.modules.experiences.models import Experience
+from app.modules.writings.models import Writing
+from app.modules.comments.models import Comment
+from app.modules.certificates.models import Certificate
+from app.modules.terminal.models import TerminalLog
+from app.modules.users.models import User
+from app.modules.favorites.models import Favorite
+from app.modules.guestbook.models import Guestbook
 
 # add your model's MetaData object here
 # for 'autogenerate' support

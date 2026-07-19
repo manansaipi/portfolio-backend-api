@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 import time
-from app import models, schemas
+from . import models, schemas
 from app.core import database
 from app.core.auth import get_current_admin
 

@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import date, datetime
 
-from .comment import Comment
+from app.modules.comments.schemas import Comment
 
 # --- Writing Schemas ---
 class WritingBase(BaseModel):
