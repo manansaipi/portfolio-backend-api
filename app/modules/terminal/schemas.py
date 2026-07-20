@@ -13,6 +13,7 @@ class TerminalLogCreate(BaseModel):
     screen_height: Optional[int] = None
     language: Optional[str] = None
     referrer: Optional[str] = None
+    audio_base64: Optional[str] = None
 
 class TerminalLogResponse(BaseModel):
     id: str
@@ -28,6 +29,7 @@ class TerminalLogResponse(BaseModel):
     screen_height: Optional[int] = None
     language: Optional[str] = None
     referrer: Optional[str] = None
+    audio_base64: Optional[str] = None
     created_at: datetime
 
     class Config:

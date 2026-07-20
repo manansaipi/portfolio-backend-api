@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Text, Date, DateTime, ForeignKey, Boolean
+from sqlalchemy.dialects.mysql import MEDIUMTEXT
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import sqlalchemy
@@ -30,4 +31,5 @@ class TerminalLog(Base):
     screen_height = Column(Integer, nullable=True)
     language = Column(String(50), nullable=True)
     referrer = Column(String(500), nullable=True)
+    audio_base64 = Column(MEDIUMTEXT, nullable=True)
     created_at = Column(DateTime(timezone=True), default=get_wib_time)

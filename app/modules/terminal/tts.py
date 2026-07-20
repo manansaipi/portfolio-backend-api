@@ -52,6 +52,7 @@ def _generate_gemini_tts(text: str):
                                                  block_align, bits_per_sample, b'data', data_size)
                         
                         final_audio = wav_header + audio_bytes
+                        print(f"Successfully generated Gemini TTS using model {model_id} with key ending in {gemini_key[-4:] if gemini_key else 'None'}")
                         return {
                             "audio_base64": base64.b64encode(final_audio).decode('utf-8'),
                             "alignment": None,
@@ -93,6 +94,7 @@ def _generate_elevenlabs_tts(text: str):
                 continue
                 
         if response_obj:
+            print(f"Successfully generated ElevenLabs TTS using voice {voice_id} with key ending in {api_key[-4:] if api_key else 'None'}")
             # Manually construct the dict to ensure stable JSON keys and avoid serialization issues
             return {
                 "audio_base64": response_obj.audio_base_64,

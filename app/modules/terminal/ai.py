@@ -45,11 +45,13 @@ def ask_ai(request: Request, payload: AIRequest):
                 except Exception as tts_err:
                     print(f"Inline TTS generation failed: {tts_err}")
 
+                print(f"Successfully generated response using model {model_name} with key ending in {key[-4:] if key else 'None'}")
                 return {
                     "response": response.text,
                     "audio": audio_data
                 }
             except Exception as e:
+                print(f"Failed using model {model_name} with key ending in {key[-4:] if key else 'None'}: {e}")
                 # If we exhausted the models and keys
                 if key == keys[-1] and model_name == MODELS[-1]:
                     return {"response": "Sorry, the AI service is currently unavailable or quota exceeded."}

@@ -47,7 +47,8 @@ def create_terminal_log(log: schemas.TerminalLogCreate, request: Request, backgr
         screen_width=log.screen_width,
         screen_height=log.screen_height,
         language=log.language,
-        referrer=log.referrer
+        referrer=log.referrer,
+        audio_base64=log.audio_base64
     )
     db.add(db_log)
     db.commit()
