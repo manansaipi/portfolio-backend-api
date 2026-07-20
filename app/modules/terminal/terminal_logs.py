@@ -62,6 +62,11 @@ def get_terminal_countries(db: Session = Depends(get_db), current_admin: str = D
     countries = db.query(models.TerminalLog.country).filter(models.TerminalLog.country.isnot(None)).distinct().all()
     return sorted([c[0] for c in countries if c[0]])
 
+@router.get("/ips", response_model=List[str])
+def get_terminal_ips(db: Session = Depends(get_db), current_admin: str = Depends(get_current_admin)):
+    ips = db.query(models.TerminalLog.ip_address).filter(models.TerminalLog.ip_address.isnot(None)).distinct().all()
+    return sorted([ip[0] for ip in ips if ip[0]])
+
 @router.get("/", response_model=schemas.TerminalLogPaginatedResponse)
 def read_terminal_logs(
     skip: int = 0, 
@@ -69,6 +74,7 @@ def read_terminal_logs(
     search: str = None,
     is_ai_mode: str = None,
     country: str = None,
+    ip_address: str = None,
     db: Session = Depends(get_db), 
     current_admin: str = Depends(get_current_admin)
 ):
@@ -78,7 +84,8 @@ def read_terminal_logs(
         search_term = f"%{search}%"
         query = query.filter(
             models.TerminalLog.input_text.ilike(search_term) | 
-            models.TerminalLog.response_text.ilike(search_term)
+            models.TerminalLog.response_text.ilike(search_term) |
+            models.TerminalLog.ip_address.ilike(search_term)
         )
     
     if is_ai_mode is not None and is_ai_mode != "all":
@@ -86,6 +93,9 @@ def read_terminal_logs(
         
     if country and country != "all":
         query = query.filter(models.TerminalLog.country == country)
+
+    if ip_address and ip_address != "all":
+        query = query.filter(models.TerminalLog.ip_address == ip_address)
 
     total = query.count()
     logs = query.order_by(models.TerminalLog.created_at.desc()).offset(skip).limit(limit).all()
