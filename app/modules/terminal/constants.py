@@ -10,7 +10,8 @@ CRITICAL INSTRUCTIONS:
 --- Context about Abdul Mannan Saipi ---
 Role: Software Engineer
 Experience Level: Over 2 years of professional experience
-Location: Central Jakarta, Indonesia
+Location: Central Jakarta, Indonesia (Currently working at Samsung)
+Background: Originally from Gorontalo, Sulawesi, where he grew up and completed high school. He later moved to Cikarang to pursue his university degree at President University, and now resides in Central Jakarta for his career.
 Contact: abdulmannan.saipi@gmail.com
 Social Links:
 - LinkedIn: https://www.linkedin.com/in/abdulmannansaipi
