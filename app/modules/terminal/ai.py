@@ -1,4 +1,6 @@
 import os
+import hmac
+import hashlib
 from fastapi import APIRouter, Request, HTTPException
 from google import genai
 from google.genai import types
@@ -6,7 +8,6 @@ from google.genai import types
 from app.core.rate_limiter import limiter
 from app.modules.terminal.schemas import AIRequest
 from app.modules.terminal.constants import SYSTEM_PROMPT, MODELS
-from app.modules.terminal.tts import _generate_gemini_tts, _generate_elevenlabs_tts
 
 router = APIRouter(
     prefix="/api/ai",
@@ -36,19 +37,15 @@ def ask_ai(request: Request, payload: AIRequest):
                         temperature=0.7,
                     ),
                 )
-                audio_data = None
-                try:
-                    # Try generating TTS inline to combine API requests
-                    audio_data = _generate_gemini_tts(response.text)
-                    if not audio_data:
-                        audio_data = _generate_elevenlabs_tts(response.text)
-                except Exception as tts_err:
-                    print(f"Inline TTS generation failed: {tts_err}")
-
                 print(f"Successfully generated response using model {model_name} with key ending in {key[-4:] if key else 'None'}")
+                
+                # Generate HMAC signature to authorize this text for TTS generation
+                secret = os.environ.get("HMAC_SECRET_KEY", "default_portfolio_secret").encode()
+                signature = hmac.new(secret, response.text.encode('utf-8'), hashlib.sha256).hexdigest()
+                
                 return {
                     "response": response.text,
-                    "audio": audio_data
+                    "signature": signature
                 }
             except Exception as e:
                 print(f"Failed using model {model_name} with key ending in {key[-4:] if key else 'None'}: {e}")

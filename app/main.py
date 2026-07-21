@@ -13,7 +13,7 @@ from app.modules.comments import router as comments
 from app.modules.certificates import router as certificates
 from app.modules.upload import router as upload
 from app.modules.auth import router as auth
-from app.modules.terminal import terminal_logs, ai
+from app.modules.terminal import terminal_logs, ai, tts
 from app.modules.users import router as users
 from app.modules.favorites import router as favorites
 from app.modules.guestbook import router as guestbook
@@ -28,9 +28,16 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Configure CORS
+origins = [
+    "https://manansaipi.com",
+    "https://www.manansaipi.com",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173"
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins (change to specific domains in production)
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
@@ -52,6 +59,7 @@ app.include_router(certificates.router)
 app.include_router(upload.router)
 app.include_router(terminal_logs.router)
 app.include_router(ai.router)
+app.include_router(tts.router)
 app.include_router(users.router)
 app.include_router(favorites.router)
 app.include_router(guestbook.router, prefix="/api/guestbook", tags=["Guestbook"])
