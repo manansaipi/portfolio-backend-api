@@ -13,7 +13,7 @@ from app.modules.comments import router as comments
 from app.modules.certificates import router as certificates
 from app.modules.upload import router as upload
 from app.modules.auth import router as auth
-from app.modules.terminal import terminal_logs, ai, tts
+from app.modules.terminal import terminal_logs, ai
 from app.modules.users import router as users
 from app.modules.favorites import router as favorites
 from app.modules.guestbook import router as guestbook
@@ -59,7 +59,6 @@ app.include_router(certificates.router)
 app.include_router(upload.router)
 app.include_router(terminal_logs.router)
 app.include_router(ai.router)
-app.include_router(tts.router)
 app.include_router(users.router)
 app.include_router(favorites.router)
 app.include_router(guestbook.router, prefix="/api/guestbook", tags=["Guestbook"])

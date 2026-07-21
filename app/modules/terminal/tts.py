@@ -1,46 +1,19 @@
 import os
 import base64
 import struct
-import hmac
-import hashlib
-from fastapi import APIRouter, HTTPException
 from google import genai
 from elevenlabs.client import ElevenLabs
 from .constants import GEMINI_TTS_MODELS, ELEVENLABS_VOICE_IDS
-from app.modules.terminal.schemas import TTSRequest, TTSResponse
-from app.core.rate_limiter import limiter
-from fastapi import Request
 
-router = APIRouter(
-    prefix="/api/tts",
-    tags=["TTS"]
-)
-
-def verify_signature(text: str, signature: str) -> bool:
-    if not signature:
-        return False
-    secret = os.environ.get("HMAC_SECRET_KEY", "default_portfolio_secret").encode()
-    expected_signature = hmac.new(secret, text.encode('utf-8'), hashlib.sha256).hexdigest()
-    return hmac.compare_digest(expected_signature, signature)
-
-@router.post("/generate", response_model=TTSResponse)
-@limiter.limit("5/day")
-def generate_tts(request: Request, payload: TTSRequest):
-    if not payload.text or not payload.text.strip():
-        raise HTTPException(status_code=400, detail="Text cannot be empty")
+def generate_tts_audio(text: str):
+    if not text or not text.strip():
+        return None
         
-    if not verify_signature(payload.text, payload.signature):
-        raise HTTPException(status_code=403, detail="Invalid signature. You cannot generate arbitrary TTS audio.")
-        
-    audio_data = _generate_gemini_tts(payload.text)
+    audio_data = _generate_gemini_tts(text)
     if not audio_data:
-        audio_data = _generate_elevenlabs_tts(payload.text)
-        
-    if not audio_data:
-        raise HTTPException(status_code=503, detail="TTS service is currently unavailable.")
+        audio_data = _generate_elevenlabs_tts(text)
         
     return audio_data
-
 
 def _generate_gemini_tts(text: str):
     gemini_key1 = os.getenv("GEMINI_API_KEY")

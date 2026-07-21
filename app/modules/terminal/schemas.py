@@ -45,11 +45,3 @@ class TerminalLogPaginatedResponse(BaseModel):
 class AIRequest(BaseModel):
     question: str
 
-class TTSRequest(BaseModel):
-    text: str
-    signature: str
-
-class TTSResponse(BaseModel):
-    audio_base64: str
-    audio_format: str
-    alignment: Optional[dict] = None
