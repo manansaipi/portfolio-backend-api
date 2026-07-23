@@ -17,8 +17,8 @@ from app.modules.terminal import terminal_logs, ai
 from app.modules.users import router as users
 from app.modules.favorites import router as favorites
 from app.modules.guestbook import router as guestbook
-from sqlalchemy import text
-from app.core.database import engine, Base, SessionLocal
+from app.modules.health import router as health
+from app.core.database import engine, Base
 
 # Create all tables in the database automatically on startup
 Base.metadata.create_all(bind=engine)
@@ -50,17 +50,8 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 def read_root():
     return {"message": "Hello! The Portfolio Backend API is up and running."}
 
-@app.get("/api/keep-alive")
-def keep_alive():
-    try:
-        db = SessionLocal()
-        db.execute(text("SELECT 1"))
-        db.close()
-        return {"status": "ok", "database": "connected", "message": "Backend and Database kept alive successfully!"}
-    except Exception as e:
-        return {"status": "error", "database": str(e)}
-
 # Include routers
+app.include_router(health)
 app.include_router(auth.router)
 app.include_router(projects.router)
 app.include_router(experiences.router)

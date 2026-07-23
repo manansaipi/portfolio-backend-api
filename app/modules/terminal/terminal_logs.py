@@ -13,19 +13,69 @@ router = APIRouter(
     tags=["Terminal Logs"]
 )
 
-def fetch_location(log_id: str, ip_address: str, db: Session):
-    if not ip_address or ip_address in ("127.0.0.1", "localhost", "::1"):
+import os
+
+def send_telegram_notification(input_text: str, is_ai_mode: bool, response_text: str, ip_address: str, country: str = None, city: str = None, execution_time_ms: int = None):
+    bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+    chat_id = os.getenv("TELEGRAM_CHAT_ID")
+    if not bot_token or not chat_id:
         return
+
+    mode_str = "🤖 AI Mode" if is_ai_mode else "💻 System Command"
+    loc_str = f"{city}, {country}" if (city and country) else (country or "Unknown Location")
+    resp_snippet = (response_text[:200] + "...") if response_text and len(response_text) > 200 else (response_text or "-")
+    exec_str = f"{execution_time_ms} ms" if execution_time_ms else "N/A"
+
+    msg = (
+        f"🖥️ *New Terminal Activity!*\n\n"
+        f"📌 *Mode:* {mode_str}\n"
+        f"💬 *Input:* `{input_text}`\n"
+        f"🤖 *Response:* {resp_snippet}\n"
+        f"📍 *Location:* {loc_str}\n"
+        f"🌐 *IP:* `{ip_address}`\n"
+        f"⏱️ *Latency:* {exec_str}"
+    )
+
+    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+    payload = json.dumps({
+        "chat_id": chat_id,
+        "text": msg,
+        "parse_mode": "Markdown"
+    }).encode("utf-8")
+
+    req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
     try:
-        with urllib.request.urlopen(f"http://ip-api.com/json/{ip_address}?fields=country,city", timeout=5) as response:
-            data = json.loads(response.read().decode())
-            db_log = db.query(models.TerminalLog).filter(models.TerminalLog.id == log_id).first()
-            if db_log:
-                db_log.country = data.get("country")
-                db_log.city = data.get("city")
-                db.commit()
-    except Exception:
-        pass
+        urllib.request.urlopen(req, timeout=5)
+    except Exception as e:
+        print(f"Telegram notification error: {e}")
+
+def process_log_background(log_id: str, input_text: str, is_ai_mode: bool, response_text: str, execution_time_ms: int, ip_address: str, db: Session):
+    country = None
+    city = None
+    if ip_address and ip_address not in ("127.0.0.1", "localhost", "::1"):
+        try:
+            with urllib.request.urlopen(f"http://ip-api.com/json/{ip_address}?fields=country,city", timeout=5) as response:
+                data = json.loads(response.read().decode())
+                country = data.get("country")
+                city = data.get("city")
+                db_log = db.query(models.TerminalLog).filter(models.TerminalLog.id == log_id).first()
+                if db_log:
+                    db_log.country = country
+                    db_log.city = city
+                    db.commit()
+        except Exception:
+            pass
+
+    # Send Telegram notification
+    send_telegram_notification(
+        input_text=input_text,
+        is_ai_mode=is_ai_mode,
+        response_text=response_text,
+        ip_address=ip_address,
+        country=country,
+        city=city,
+        execution_time_ms=execution_time_ms
+    )
 
 from app.core.rate_limiter import limiter
 
@@ -54,7 +104,16 @@ def create_terminal_log(log: schemas.TerminalLogCreate, request: Request, backgr
     db.commit()
     db.refresh(db_log)
     
-    background_tasks.add_task(fetch_location, db_log.id, ip_address, db)
+    background_tasks.add_task(
+        process_log_background, 
+        log_id=db_log.id, 
+        input_text=log.input_text,
+        is_ai_mode=log.is_ai_mode,
+        response_text=log.response_text,
+        execution_time_ms=log.execution_time_ms,
+        ip_address=ip_address, 
+        db=db
+    )
     return db_log
 
 @router.get("/countries", response_model=List[str])
