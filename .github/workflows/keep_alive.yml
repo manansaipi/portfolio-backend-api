@@ -1,0 +1,20 @@
+name: Keep Database & Server Alive
+
+on:
+  schedule:
+    # Runs every 6 hours
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Keep-Alive Endpoint
+        run: |
+          BACKEND_URL="${{ secrets.BACKEND_URL }}"
+          if [ -z "$BACKEND_URL" ]; then
+            BACKEND_URL="https://portofolio-backend-api.fastapicloud.dev"
+          fi
+          echo "Pinging ${BACKEND_URL}/api/keep-alive..."
+          curl -sS "${BACKEND_URL}/api/keep-alive"
