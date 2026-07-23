@@ -51,7 +51,7 @@ def read_root():
     return {"message": "Hello! The Portfolio Backend API is up and running."}
 
 # Include routers
-app.include_router(health)
+app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(projects.router)
 app.include_router(experiences.router)
