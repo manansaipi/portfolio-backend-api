@@ -20,6 +20,9 @@ def send_telegram_notification(input_text: str, is_ai_mode: bool, response_text:
     chat_id = os.getenv("TELEGRAM_CHAT_ID")
     if not bot_token or not chat_id:
         return
+    
+    bot_token = bot_token.strip(' "\'')
+    chat_id = chat_id.strip(' "\'')
 
     mode_str = "🤖 AI Mode" if is_ai_mode else "💻 System Command"
     loc_str = f"{city}, {country}" if (city and country) else (country or "Unknown Location")

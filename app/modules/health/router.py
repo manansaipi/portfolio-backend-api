@@ -17,6 +17,9 @@ def send_keep_alive_telegram_notification():
     chat_id = os.getenv("TELEGRAM_CHAT_ID")
     if not bot_token or not chat_id:
         return
+    
+    bot_token = bot_token.strip(' "\'')
+    chat_id = chat_id.strip(' "\'')
 
     msg = (
         "⏰ *Scheduled Database Keep-Alive Triggered!*\n\n"
