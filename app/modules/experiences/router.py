@@ -64,4 +64,5 @@ def delete_experience(experience_id: str, db: Session = Depends(database.get_db)
         
     db.delete(db_experience)
     db.commit()
+    clear_experiences_cache()
     return None

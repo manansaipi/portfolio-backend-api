@@ -64,6 +64,7 @@ def delete_writing(writing_id: str, db: Session = Depends(database.get_db), curr
         
     db.delete(db_writing)
     db.commit()
+    clear_writings_cache()
     return None
 
 @router.get("/{writing_id}", response_model=schemas.Writing)
