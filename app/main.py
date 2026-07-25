@@ -18,6 +18,7 @@ from app.modules.users import router as users
 from app.modules.favorites import router as favorites
 from app.modules.guestbook import router as guestbook
 from app.modules.health import router as health
+from app.modules.gallery import router as gallery
 from app.core.database import engine, Base
 
 # Create all tables in the database automatically on startup
@@ -63,4 +64,5 @@ app.include_router(terminal_logs.router)
 app.include_router(ai.router)
 app.include_router(users.router)
 app.include_router(favorites.router)
+app.include_router(gallery.router)
 app.include_router(guestbook.router, prefix="/api/guestbook", tags=["Guestbook"])

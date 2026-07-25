@@ -1,5 +1,5 @@
 import os
-from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException
 from app.core.auth import get_current_admin
 import cloudinary
 import cloudinary.uploader
@@ -10,7 +10,7 @@ router = APIRouter(
 )
 
 @router.post("/upload")
-async def upload_image(file: UploadFile = File(...), current_user: str = Depends(get_current_admin)):
+async def upload_image(file: UploadFile = File(...), folder: str = Form("portfolio_uploads"), current_user: str = Depends(get_current_admin)):
     if not os.getenv("CLOUDINARY_URL"):
         raise HTTPException(status_code=500, detail="Cloudinary is not configured on the server.")
         
@@ -18,9 +18,9 @@ async def upload_image(file: UploadFile = File(...), current_user: str = Depends
         # Upload the file to Cloudinary using the file object
         result = cloudinary.uploader.upload(
             file.file,
-            folder="portfolio_uploads",
-            resource_type="image",
-            format="webp"
+            folder=folder,
+            resource_type="auto",
+            format="webp" if file.content_type and file.content_type.startswith("image") else None
         )
         
         # Return the secure https URL provided by Cloudinary
