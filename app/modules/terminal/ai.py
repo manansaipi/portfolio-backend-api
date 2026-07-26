@@ -1,12 +1,16 @@
 import os
-from fastapi import APIRouter, Request, HTTPException
+import time
+from fastapi import APIRouter, Request, HTTPException, Depends, BackgroundTasks
+from sqlalchemy.orm import Session
 from google import genai
 from google.genai import types
 
+from app.core.database import get_db
 from app.core.rate_limiter import limiter
 from app.modules.terminal.schemas import AIRequest
 from app.modules.terminal.constants import SYSTEM_PROMPT, MODELS
 from app.modules.terminal.tts import generate_tts_audio
+from app.modules.terminal.terminal_logs import save_terminal_log_entry
 
 router = APIRouter(
     prefix="/api/ai",
@@ -15,7 +19,9 @@ router = APIRouter(
 
 @router.post("/ask")
 @limiter.limit("5/day")
-def ask_ai(request: Request, payload: AIRequest):
+def ask_ai(request: Request, payload: AIRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    start_time = time.time()
+
     # Retrieve API keys from env
     key1 = os.environ.get("GEMINI_API_KEY", "")
     key2 = os.environ.get("GEMINI_API_KEY_2", "")
@@ -39,6 +45,23 @@ def ask_ai(request: Request, payload: AIRequest):
                 print(f"Successfully generated response using model {model_name} with key ending in {key[-4:] if key else 'None'}")
                 
                 audio_result = generate_tts_audio(response.text)
+                execution_time_ms = int((time.time() - start_time) * 1000)
+                audio_b64 = audio_result.get("audioBase64") if isinstance(audio_result, dict) else None
+
+                # Save AI log to database
+                try:
+                    save_terminal_log_entry(
+                        db=db,
+                        request=request,
+                        background_tasks=background_tasks,
+                        input_text=payload.question,
+                        is_ai_mode=True,
+                        response_text=response.text,
+                        execution_time_ms=execution_time_ms,
+                        audio_base64=audio_b64
+                    )
+                except Exception as log_err:
+                    print(f"Error saving AI log to DB: {log_err}")
                 
                 if audio_result:
                     return {

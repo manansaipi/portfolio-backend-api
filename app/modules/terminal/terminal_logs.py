@@ -80,44 +80,73 @@ def process_log_background(log_id: str, input_text: str, is_ai_mode: bool, respo
         execution_time_ms=execution_time_ms
     )
 
-from app.core.rate_limiter import limiter
-
-@router.post("/", response_model=schemas.TerminalLogResponse)
-@limiter.limit("30/minute")
-def create_terminal_log(log: schemas.TerminalLogCreate, request: Request, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
-    # Try to get the real IP if behind a proxy
+def save_terminal_log_entry(
+    db: Session,
+    request: Request,
+    background_tasks: BackgroundTasks,
+    input_text: str,
+    is_ai_mode: bool,
+    response_text: str,
+    execution_time_ms: int = None,
+    audio_base64: str = None,
+    screen_width: int = None,
+    screen_height: int = None,
+    language: str = None,
+    referrer: str = None
+):
     forwarded_for = request.headers.get("X-Forwarded-For")
-    ip_address = forwarded_for.split(",")[0].strip() if forwarded_for else request.client.host
+    ip_address = forwarded_for.split(",")[0].strip() if forwarded_for else (request.client.host if request.client and hasattr(request.client, 'host') else "127.0.0.1")
     user_agent = request.headers.get("User-Agent")
 
     db_log = models.TerminalLog(
-        input_text=log.input_text,
-        is_ai_mode=log.is_ai_mode,
-        response_text=log.response_text,
-        execution_time_ms=log.execution_time_ms,
+        input_text=input_text,
+        is_ai_mode=is_ai_mode,
+        response_text=response_text,
+        execution_time_ms=execution_time_ms,
         ip_address=ip_address,
         user_agent=user_agent,
-        screen_width=log.screen_width,
-        screen_height=log.screen_height,
-        language=log.language,
-        referrer=log.referrer,
-        audio_base64=log.audio_base64
+        screen_width=screen_width,
+        screen_height=screen_height,
+        language=language,
+        referrer=referrer,
+        audio_base64=audio_base64
     )
     db.add(db_log)
     db.commit()
     db.refresh(db_log)
     
-    background_tasks.add_task(
-        process_log_background, 
-        log_id=db_log.id, 
+    if background_tasks:
+        background_tasks.add_task(
+            process_log_background, 
+            log_id=db_log.id, 
+            input_text=input_text,
+            is_ai_mode=is_ai_mode,
+            response_text=response_text,
+            execution_time_ms=execution_time_ms,
+            ip_address=ip_address, 
+            db=db
+        )
+    return db_log
+
+from app.core.rate_limiter import limiter
+
+@router.post("/", response_model=schemas.TerminalLogResponse)
+@limiter.limit("30/minute")
+def create_terminal_log(log: schemas.TerminalLogCreate, request: Request, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    return save_terminal_log_entry(
+        db=db,
+        request=request,
+        background_tasks=background_tasks,
         input_text=log.input_text,
         is_ai_mode=log.is_ai_mode,
         response_text=log.response_text,
         execution_time_ms=log.execution_time_ms,
-        ip_address=ip_address, 
-        db=db
+        audio_base64=log.audio_base64,
+        screen_width=log.screen_width,
+        screen_height=log.screen_height,
+        language=log.language,
+        referrer=log.referrer
     )
-    return db_log
 
 @router.get("/countries", response_model=List[str])
 def get_terminal_countries(db: Session = Depends(get_db), current_admin: str = Depends(get_current_admin)):
