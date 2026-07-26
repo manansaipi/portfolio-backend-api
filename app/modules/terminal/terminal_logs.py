@@ -15,7 +15,19 @@ router = APIRouter(
 
 import os
 
-def send_telegram_notification(input_text: str, is_ai_mode: bool, response_text: str, ip_address: str, country: str = None, city: str = None, execution_time_ms: int = None):
+def send_telegram_notification(
+    input_text: str, 
+    is_ai_mode: bool, 
+    response_text: str, 
+    ip_address: str, 
+    country: str = None, 
+    city: str = None, 
+    execution_time_ms: int = None,
+    screen_width: int = None,
+    screen_height: int = None,
+    language: str = None,
+    referrer: str = None
+):
     bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
     chat_id = os.getenv("TELEGRAM_CHAT_ID")
     if not bot_token or not chat_id:
@@ -29,6 +41,13 @@ def send_telegram_notification(input_text: str, is_ai_mode: bool, response_text:
     resp_snippet = (response_text[:200] + "...") if response_text and len(response_text) > 200 else (response_text or "-")
     exec_str = f"{execution_time_ms} ms" if execution_time_ms else "N/A"
 
+    device_parts = []
+    if screen_width and screen_height:
+        device_parts.append(f"{screen_width}x{screen_height}")
+    if language:
+        device_parts.append(language)
+    device_str = " | ".join(device_parts) if device_parts else "N/A"
+
     msg = (
         f"🖥️ *New Terminal Activity!*\n\n"
         f"📌 *Mode:* {mode_str}\n"
@@ -36,8 +55,11 @@ def send_telegram_notification(input_text: str, is_ai_mode: bool, response_text:
         f"🤖 *Response:* {resp_snippet}\n"
         f"📍 *Location:* {loc_str}\n"
         f"🌐 *IP:* `{ip_address}`\n"
-        f"⏱️ *Latency:* {exec_str}"
+        f"📱 *Device:* {device_str}\n"
     )
+    if referrer:
+        msg += f"🔗 *Referrer:* `{referrer}`\n"
+    msg += f"⏱️ *Latency:* {exec_str}"
 
     url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
     payload = json.dumps({
@@ -52,7 +74,19 @@ def send_telegram_notification(input_text: str, is_ai_mode: bool, response_text:
     except Exception as e:
         print(f"Telegram notification error: {e}")
 
-def process_log_background(log_id: str, input_text: str, is_ai_mode: bool, response_text: str, execution_time_ms: int, ip_address: str, db: Session):
+def process_log_background(
+    log_id: str, 
+    input_text: str, 
+    is_ai_mode: bool, 
+    response_text: str, 
+    execution_time_ms: int, 
+    ip_address: str, 
+    db: Session,
+    screen_width: int = None,
+    screen_height: int = None,
+    language: str = None,
+    referrer: str = None
+):
     country = None
     city = None
     if ip_address and ip_address not in ("127.0.0.1", "localhost", "::1"):
@@ -77,7 +111,11 @@ def process_log_background(log_id: str, input_text: str, is_ai_mode: bool, respo
         ip_address=ip_address,
         country=country,
         city=city,
-        execution_time_ms=execution_time_ms
+        execution_time_ms=execution_time_ms,
+        screen_width=screen_width,
+        screen_height=screen_height,
+        language=language,
+        referrer=referrer
     )
 
 def save_terminal_log_entry(
@@ -124,7 +162,11 @@ def save_terminal_log_entry(
             response_text=response_text,
             execution_time_ms=execution_time_ms,
             ip_address=ip_address, 
-            db=db
+            db=db,
+            screen_width=screen_width,
+            screen_height=screen_height,
+            language=language,
+            referrer=referrer
         )
     return db_log
 

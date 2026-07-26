@@ -58,7 +58,11 @@ def ask_ai(request: Request, payload: AIRequest, background_tasks: BackgroundTas
                         is_ai_mode=True,
                         response_text=response.text,
                         execution_time_ms=execution_time_ms,
-                        audio_base64=audio_b64
+                        audio_base64=audio_b64,
+                        screen_width=payload.screen_width,
+                        screen_height=payload.screen_height,
+                        language=payload.language,
+                        referrer=payload.referrer
                     )
                 except Exception as log_err:
                     print(f"Error saving AI log to DB: {log_err}")

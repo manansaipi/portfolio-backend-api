@@ -44,4 +44,8 @@ class TerminalLogPaginatedResponse(BaseModel):
 
 class AIRequest(BaseModel):
     question: str
+    screen_width: Optional[int] = None
+    screen_height: Optional[int] = None
+    language: Optional[str] = None
+    referrer: Optional[str] = None
 
