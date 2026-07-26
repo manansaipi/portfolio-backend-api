@@ -23,6 +23,10 @@ async def museum_websocket_endpoint(websocket: WebSocket, room_id: str, client_i
                     await manager.handle_move(room_id, client_id, data)
                 elif event_type == "chat":
                     await manager.handle_chat(room_id, client_id, data)
+                elif event_type == "delete_chat":
+                    await manager.handle_delete_chat(room_id, client_id, data)
+                elif event_type == "edit_chat":
+                    await manager.handle_edit_chat(room_id, client_id, data)
                 elif event_type == "update_profile":
                     await manager.handle_update_profile(room_id, client_id, data)
                 elif event_type == "ping":
@@ -30,11 +34,9 @@ async def museum_websocket_endpoint(websocket: WebSocket, room_id: str, client_i
             except json.JSONDecodeError:
                 pass
     except WebSocketDisconnect:
-        manager.disconnect(room_id, client_id)
-        await manager.broadcast_to_room(room_id, {"type": "player_left", "id": client_id}, exclude_client=client_id)
+        await manager.handle_leave(room_id, client_id)
     except Exception as e:
-        manager.disconnect(room_id, client_id)
-        await manager.broadcast_to_room(room_id, {"type": "player_left", "id": client_id}, exclude_client=client_id)
+        await manager.handle_leave(room_id, client_id)
 
 @router.get("/rooms/{room_id}/count")
 def get_room_visitor_count(room_id: str):
@@ -75,7 +77,8 @@ def get_chat_history(room_id: str, skip: int = 0, limit: int = 50, db: Session =
             senderIsAdmin=m.is_admin,
             text=m.message,
             timestamp_float=m.timestamp,
-            timestamp=time_str
+            timestamp=time_str,
+            system=(m.sender_id == "SYSTEM")
         ))
         
     has_more = (skip + limit) < total

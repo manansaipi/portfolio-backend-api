@@ -24,6 +24,44 @@ class ConnectionManager:
         if room_id in self.players and client_id in self.players[room_id]:
             del self.players[room_id][client_id]
 
+    def _save_system_message(self, room_id: str, message_text: str) -> str:
+        from app.core.database import SessionLocal
+        from app.modules.multiplayer.models import MuseumChatMessage
+        
+        db = SessionLocal()
+        timestamp = time.time()
+        try:
+            db_msg = MuseumChatMessage(
+                room_id=room_id,
+                sender_id="SYSTEM",
+                sender_name="System",
+                sender_color="#64748b",
+                is_admin=False,
+                message=message_text,
+                timestamp=timestamp
+            )
+            db.add(db_msg)
+            db.commit()
+            db.refresh(db_msg)
+            return str(db_msg.id)
+        except Exception as e:
+            print(f"Failed to save system chat message: {e}")
+            return f"sys-{timestamp}"
+        finally:
+            db.close()
+
+    async def handle_leave(self, room_id: str, client_id: str):
+        if room_id in self.players and client_id in self.players[room_id]:
+            player_name = self.players[room_id][client_id].get("name", "An explorer")
+            is_admin = self.players[room_id][client_id].get("isAdmin", False)
+            is_admin_activity = is_admin or "admin" in player_name.lower() or "saipi" in player_name.lower()
+            if not is_admin_activity:
+                self._save_system_message(room_id, f"{player_name} left the museum.")
+            self.disconnect(room_id, client_id)
+            await self.broadcast_to_room(room_id, {"type": "player_left", "id": client_id, "name": player_name}, exclude_client=client_id)
+        else:
+            self.disconnect(room_id, client_id)
+
     async def handle_join(self, room_id: str, client_id: str, data: Dict[str, Any]):
         websocket = self.active_connections.get(room_id, {}).get(client_id)
         if not websocket:
@@ -51,6 +89,11 @@ class ConnectionManager:
             p for cid, p in self.players[room_id].items() if cid != client_id
         ]
         await self.send_personal_message({"type": "init", "players": other_players}, websocket)
+
+        # Save join activity to DB unless it is admin activity
+        is_admin_activity = is_admin or "admin" in name.lower() or "saipi" in name.lower()
+        if not is_admin_activity:
+            self._save_system_message(room_id, f"{name} joined the museum.")
 
         # 2. Broadcast player_joined to all other clients in the room
         await self.broadcast_to_room(room_id, {"type": "player_joined", "player": player_data}, exclude_client=client_id)
@@ -129,14 +172,89 @@ class ConnectionManager:
         # Broadcast chat to EVERYONE in the room including sender
         await self.broadcast_to_room(room_id, chat_payload)
 
+    async def handle_delete_chat(self, room_id: str, client_id: str, data: Dict[str, Any]):
+        if room_id not in self.players or client_id not in self.players[room_id]:
+            return
+        player = self.players[room_id][client_id]
+        if not player.get("isAdmin", False):
+            return
+            
+        msg_id = data.get("msg_id")
+        if not msg_id:
+            return
+
+        from app.core.database import SessionLocal
+        from app.modules.multiplayer.models import MuseumChatMessage
+        db = SessionLocal()
+        try:
+            db.query(MuseumChatMessage).filter(MuseumChatMessage.id == msg_id).delete()
+            db.commit()
+        except Exception as e:
+            print(f"Failed to delete chat: {e}")
+        finally:
+            db.close()
+
+        await self.broadcast_to_room(room_id, {
+            "type": "chat_deleted",
+            "msg_id": msg_id
+        })
+
+    async def handle_edit_chat(self, room_id: str, client_id: str, data: Dict[str, Any]):
+        if room_id not in self.players or client_id not in self.players[room_id]:
+            return
+        player = self.players[room_id][client_id]
+        if not player.get("isAdmin", False):
+            return
+            
+        msg_id = data.get("msg_id")
+        new_text = data.get("new_text", "").strip()
+        if not msg_id or not new_text:
+            return
+
+        from app.core.database import SessionLocal
+        from app.modules.multiplayer.models import MuseumChatMessage
+        db = SessionLocal()
+        try:
+            db_msg = db.query(MuseumChatMessage).filter(MuseumChatMessage.id == msg_id).first()
+            if db_msg:
+                db_msg.message = new_text
+                db.commit()
+        except Exception as e:
+            print(f"Failed to edit chat: {e}")
+        finally:
+            db.close()
+
+        await self.broadcast_to_room(room_id, {
+            "type": "chat_edited",
+            "msg_id": msg_id,
+            "new_text": new_text
+        })
+
     async def handle_update_profile(self, room_id: str, client_id: str, data: Dict[str, Any]):
         if room_id not in self.players or client_id not in self.players[room_id]:
             return
 
-        if "name" in data:
-            self.players[room_id][client_id]["name"] = data["name"]
-        if "color" in data:
-            self.players[room_id][client_id]["color"] = data["color"]
+        old_name = self.players[room_id][client_id]["name"]
+        old_color = self.players[room_id][client_id]["color"]
+        new_name = data.get("name", old_name)
+        new_color = data.get("color", old_color)
+
+        is_admin = self.players[room_id][client_id].get("isAdmin", False)
+        is_admin_activity = is_admin or "admin" in new_name.lower() or "saipi" in new_name.lower() or "admin" in old_name.lower() or "saipi" in old_name.lower()
+
+        activity_msgs = []
+        if new_name != old_name:
+            self.players[room_id][client_id]["name"] = new_name
+            msg = f"{old_name} changed nickname to {new_name}."
+            if not is_admin_activity:
+                self._save_system_message(room_id, msg)
+            activity_msgs.append(msg)
+        if new_color != old_color:
+            self.players[room_id][client_id]["color"] = new_color
+            msg = f"{new_name} changed avatar color."
+            if not is_admin_activity:
+                self._save_system_message(room_id, msg)
+            activity_msgs.append(msg)
 
         # Broadcast profile update
         await self.broadcast_to_room(
@@ -145,7 +263,8 @@ class ConnectionManager:
                 "type": "player_updated",
                 "id": client_id,
                 "name": self.players[room_id][client_id]["name"],
-                "color": self.players[room_id][client_id]["color"]
+                "color": self.players[room_id][client_id]["color"],
+                "activity": activity_msgs
             }
         )
 
@@ -169,8 +288,7 @@ class ConnectionManager:
                 dead_clients.append(cid)
 
         for cid in dead_clients:
-            self.disconnect(room_id, cid)
-            await self.broadcast_to_room(room_id, {"type": "player_left", "id": cid}, exclude_client=cid)
+            await self.handle_leave(room_id, cid)
 
     def get_room_count(self, room_id: str) -> int:
         return len(self.players.get(room_id, {}))
