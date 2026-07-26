@@ -19,3 +19,9 @@ class PaginatedChatResponse(BaseModel):
     messages: List[ChatMessageResponse]
     hasMore: bool
     total: int
+
+class ChatMessageUpdate(BaseModel):
+    text: str
+
+class DeleteMessagesRequest(BaseModel):
+    message_ids: List[int]

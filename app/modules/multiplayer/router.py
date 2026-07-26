@@ -45,12 +45,36 @@ def get_room_visitor_count(room_id: str):
         "count": manager.get_room_count(room_id)
     }
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.modules.multiplayer.models import MuseumChatMessage
-from app.modules.multiplayer.schemas import PaginatedChatResponse, ChatMessageResponse
+from app.modules.multiplayer.schemas import PaginatedChatResponse, ChatMessageResponse, ChatMessageUpdate, DeleteMessagesRequest
 from datetime import datetime
+
+@router.get("/chat/admin/all", response_model=PaginatedChatResponse)
+def get_all_chat_admin(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    query = db.query(MuseumChatMessage).order_by(MuseumChatMessage.timestamp.desc())
+    total = query.count()
+    messages_db = query.offset(skip).limit(limit).all()
+    
+    response_messages = []
+    for m in messages_db:
+        dt = datetime.fromtimestamp(m.timestamp)
+        time_str = dt.strftime("%I:%M %p").lstrip("0")
+        response_messages.append(ChatMessageResponse(
+            id=str(m.id),
+            senderId=m.sender_id,
+            senderName=m.sender_name,
+            senderColor=m.sender_color,
+            senderIsAdmin=m.is_admin,
+            text=m.message,
+            timestamp_float=m.timestamp,
+            timestamp=time_str,
+            system=(m.sender_id == "SYSTEM")
+        ))
+    has_more = (skip + limit) < total
+    return PaginatedChatResponse(messages=response_messages, hasMore=has_more, total=total)
 
 @router.get("/chat/{room_id}", response_model=PaginatedChatResponse)
 def get_chat_history(room_id: str, skip: int = 0, limit: int = 50, db: Session = Depends(get_db)):
@@ -83,3 +107,42 @@ def get_chat_history(room_id: str, skip: int = 0, limit: int = 50, db: Session =
         
     has_more = (skip + limit) < total
     return PaginatedChatResponse(messages=response_messages, hasMore=has_more, total=total)
+
+@router.delete("/chat/messages")
+async def delete_chat_messages_bulk(payload: DeleteMessagesRequest, db: Session = Depends(get_db)):
+    deleted_ids = []
+    rooms_affected = set()
+    for msg_id in payload.message_ids:
+        msg = db.query(MuseumChatMessage).filter(MuseumChatMessage.id == msg_id).first()
+        if msg:
+            rooms_affected.add(msg.room_id)
+            deleted_ids.append(msg_id)
+            db.delete(msg)
+    db.commit()
+    for room_id in rooms_affected:
+        for msg_id in deleted_ids:
+            await manager.broadcast_to_room(room_id, {"type": "chat_deleted", "id": str(msg_id)})
+    return {"status": "success", "deleted_ids": [str(i) for i in deleted_ids]}
+
+@router.delete("/chat/messages/{message_id}")
+async def delete_chat_message(message_id: int, db: Session = Depends(get_db)):
+    msg = db.query(MuseumChatMessage).filter(MuseumChatMessage.id == message_id).first()
+    if not msg:
+        raise HTTPException(status_code=404, detail="Message not found")
+    room_id = msg.room_id
+    db.delete(msg)
+    db.commit()
+    await manager.broadcast_to_room(room_id, {"type": "chat_deleted", "id": str(message_id)})
+    return {"status": "success", "id": str(message_id)}
+
+@router.put("/chat/messages/{message_id}")
+async def update_chat_message(message_id: int, payload: ChatMessageUpdate, db: Session = Depends(get_db)):
+    msg = db.query(MuseumChatMessage).filter(MuseumChatMessage.id == message_id).first()
+    if not msg:
+        raise HTTPException(status_code=404, detail="Message not found")
+    room_id = msg.room_id
+    msg.message = payload.text
+    db.commit()
+    db.refresh(msg)
+    await manager.broadcast_to_room(room_id, {"type": "chat_edited", "id": str(message_id), "newText": payload.text})
+    return {"status": "success", "id": str(message_id), "newText": payload.text}
