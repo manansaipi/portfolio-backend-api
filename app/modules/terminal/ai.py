@@ -46,7 +46,7 @@ def ask_ai(request: Request, payload: AIRequest, background_tasks: BackgroundTas
                 
                 audio_result = generate_tts_audio(response.text)
                 execution_time_ms = int((time.time() - start_time) * 1000)
-                audio_b64 = audio_result.get("audioBase64") if isinstance(audio_result, dict) else None
+                audio_b64 = audio_result.get("audio_base64") if isinstance(audio_result, dict) else None
 
                 # Save AI log to database
                 try:
