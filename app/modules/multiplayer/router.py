@@ -23,6 +23,8 @@ async def museum_websocket_endpoint(websocket: WebSocket, room_id: str, client_i
                     await manager.handle_move(room_id, client_id, data)
                 elif event_type == "chat":
                     await manager.handle_chat(room_id, client_id, data)
+                elif event_type == "emote":
+                    await manager.handle_emote(room_id, client_id, data)
                 elif event_type == "delete_chat":
                     await manager.handle_delete_chat(room_id, client_id, data)
                 elif event_type == "edit_chat":

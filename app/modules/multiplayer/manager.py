@@ -1,7 +1,37 @@
 import json
 import time
+import os
+import requests
+import threading
 from typing import Dict, Any, List
 from fastapi import WebSocket
+
+def send_museum_join_notification(name: str, room_id: str):
+    bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+    chat_id = os.getenv("TELEGRAM_CHAT_ID")
+    if not bot_token or not chat_id:
+        return
+        
+    bot_token = bot_token.strip(' "\'')
+    chat_id = chat_id.strip(' "\'')
+    
+    msg = (
+        f"🏛️ *New Museum Visitor!*\n\n"
+        f"👤 *Name:* `{name}`\n"
+        f"🚪 *Room:* `{room_id}`\n"
+        f"⏰ *Time:* `{time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())} UTC`\n"
+    )
+    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+    payload = json.dumps({"chat_id": chat_id, "text": msg, "parse_mode": "Markdown"})
+    headers = {'Content-Type': 'application/json'}
+    
+    def post_req():
+        try:
+            requests.post(url, headers=headers, data=payload, timeout=5)
+        except Exception as e:
+            print(f"Telegram notification error: {e}")
+            
+    threading.Thread(target=post_req, daemon=True).start()
 
 class ConnectionManager:
     def __init__(self):
@@ -80,6 +110,8 @@ class ConnectionManager:
             "isAdmin": is_admin,
             "position": position,
             "rotation": rotation,
+            "current_emote": None,
+            "emote_end_time": 0,
             "last_seen": time.time()
         }
         self.players[room_id][client_id] = player_data
@@ -94,6 +126,7 @@ class ConnectionManager:
         is_admin_activity = is_admin or "admin" in name.lower() or "saipi" in name.lower()
         if not is_admin_activity:
             self._save_system_message(room_id, f"{name} joined the museum.")
+            send_museum_join_notification(name, room_id)
 
         # 2. Broadcast player_joined to all other clients in the room
         await self.broadcast_to_room(room_id, {"type": "player_joined", "player": player_data}, exclude_client=client_id)
@@ -102,13 +135,36 @@ class ConnectionManager:
         if room_id not in self.players or client_id not in self.players[room_id]:
             return
 
+        old_pos = self.players[room_id][client_id].get("position")
         position = data.get("position")
         rotation = data.get("rotation")
+        
+        moved_significantly = False
+        if position and old_pos:
+            dx = position[0] - old_pos[0]
+            dy = position[1] - old_pos[1]
+            dz = position[2] - old_pos[2]
+            if (dx*dx + dy*dy + dz*dz) > 0.0025:
+                moved_significantly = True
+
         if position:
             self.players[room_id][client_id]["position"] = position
         if rotation:
             self.players[room_id][client_id]["rotation"] = rotation
         self.players[room_id][client_id]["last_seen"] = time.time()
+
+        # ONLY cancel active emote if player moved position significantly! Looking around/turning does not cancel!
+        if moved_significantly and self.players[room_id][client_id].get("current_emote"):
+            self.players[room_id][client_id]["current_emote"] = None
+            self.players[room_id][client_id]["emote_end_time"] = 0
+            # Broadcast emote cancellation
+            await self.broadcast_to_room(room_id, {
+                "type": "player_emoted",
+                "id": client_id,
+                "emote": None,
+                "duration": 0,
+                "timestamp": time.time()
+            })
 
         # Broadcast player_moved to others
         await self.broadcast_to_room(
@@ -171,6 +227,25 @@ class ConnectionManager:
 
         # Broadcast chat to EVERYONE in the room including sender
         await self.broadcast_to_room(room_id, chat_payload)
+
+    async def handle_emote(self, room_id: str, client_id: str, data: Dict[str, Any]):
+        if room_id not in self.players or client_id not in self.players[room_id]:
+            return
+            
+        emote_type = data.get("emote")
+        duration = data.get("duration", 3.0)
+        player = self.players[room_id][client_id]
+        player["current_emote"] = emote_type
+        player["emote_end_time"] = time.time() + duration if emote_type else 0
+
+        await self.broadcast_to_room(room_id, {
+            "type": "player_emoted",
+            "id": client_id,
+            "name": player.get("name", "Visitor"),
+            "emote": emote_type,
+            "duration": duration,
+            "timestamp": time.time()
+        })
 
     async def handle_delete_chat(self, room_id: str, client_id: str, data: Dict[str, Any]):
         if room_id not in self.players or client_id not in self.players[room_id]:
