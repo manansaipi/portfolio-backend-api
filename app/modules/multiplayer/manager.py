@@ -93,6 +93,7 @@ class ConnectionManager:
             "id": client_id,
             "name": player.get("name", "Visitor"),
             "color": player.get("color", "#38bdf8"),
+            "isAdmin": player.get("isAdmin", False),
             "message": message_text,
             "timestamp": time.time()
         }
