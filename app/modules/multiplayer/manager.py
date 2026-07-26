@@ -82,20 +82,48 @@ class ConnectionManager:
     async def handle_chat(self, room_id: str, client_id: str, data: Dict[str, Any]):
         if room_id not in self.players or client_id not in self.players[room_id]:
             return
-
+            
         message_text = data.get("message", "").strip()
         if not message_text:
             return
 
         player = self.players[room_id][client_id]
+        timestamp = time.time()
+        
+        # Save to database
+        from app.core.database import SessionLocal
+        from app.modules.multiplayer.models import MuseumChatMessage
+        
+        db = SessionLocal()
+        try:
+            db_msg = MuseumChatMessage(
+                room_id=room_id,
+                sender_id=client_id,
+                sender_name=player.get("name", "Visitor"),
+                sender_color=player.get("color", "#38bdf8"),
+                is_admin=player.get("isAdmin", False),
+                message=message_text,
+                timestamp=timestamp
+            )
+            db.add(db_msg)
+            db.commit()
+            db.refresh(db_msg)
+            msg_id = str(db_msg.id)
+        except Exception as e:
+            print(f"Failed to save chat message: {e}")
+            msg_id = f"{client_id}-{timestamp}"
+        finally:
+            db.close()
+
         chat_payload = {
             "type": "player_chat",
             "id": client_id,
+            "db_id": msg_id,
             "name": player.get("name", "Visitor"),
             "color": player.get("color", "#38bdf8"),
             "isAdmin": player.get("isAdmin", False),
             "message": message_text,
-            "timestamp": time.time()
+            "timestamp": timestamp
         }
 
         # Broadcast chat to EVERYONE in the room including sender

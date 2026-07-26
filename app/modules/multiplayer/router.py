@@ -42,3 +42,41 @@ def get_room_visitor_count(room_id: str):
         "room_id": room_id,
         "count": manager.get_room_count(room_id)
     }
+
+from fastapi import Depends
+from sqlalchemy.orm import Session
+from app.core.database import get_db
+from app.modules.multiplayer.models import MuseumChatMessage
+from app.modules.multiplayer.schemas import PaginatedChatResponse, ChatMessageResponse
+from datetime import datetime
+
+@router.get("/chat/{room_id}", response_model=PaginatedChatResponse)
+def get_chat_history(room_id: str, skip: int = 0, limit: int = 50, db: Session = Depends(get_db)):
+    # Query database for messages in this room, newest first
+    query = db.query(MuseumChatMessage).filter(MuseumChatMessage.room_id == room_id).order_by(MuseumChatMessage.timestamp.desc())
+    
+    total = query.count()
+    messages_db = query.offset(skip).limit(limit).all()
+    
+    # We want to return them chronologically for the frontend, so reverse the fetched chunk
+    messages_db.reverse()
+    
+    response_messages = []
+    for m in messages_db:
+        # Convert timestamp float to HH:MM format
+        dt = datetime.fromtimestamp(m.timestamp)
+        time_str = dt.strftime("%I:%M %p").lstrip("0")
+        
+        response_messages.append(ChatMessageResponse(
+            id=str(m.id),
+            senderId=m.sender_id,
+            senderName=m.sender_name,
+            senderColor=m.sender_color,
+            senderIsAdmin=m.is_admin,
+            text=m.message,
+            timestamp_float=m.timestamp,
+            timestamp=time_str
+        ))
+        
+    has_more = (skip + limit) < total
+    return PaginatedChatResponse(messages=response_messages, hasMore=has_more, total=total)

@@ -22,6 +22,9 @@ from app.modules.gallery import router as gallery
 from app.modules.multiplayer import router as multiplayer
 from app.core.database import engine, Base
 
+# Import models to ensure they are registered with SQLAlchemy
+import app.modules.multiplayer.models
+
 # Create all tables in the database automatically on startup
 Base.metadata.create_all(bind=engine)
 
