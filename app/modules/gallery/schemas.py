@@ -16,6 +16,7 @@ class GalleryMediaBase(BaseModel):
     lens: Optional[str] = None
     tags: Optional[str] = None
     is_featured: Optional[bool] = False
+    is_visible: Optional[bool] = True
 
 class GalleryMediaCreate(GalleryMediaBase):
     pass
@@ -34,6 +35,7 @@ class GalleryMediaUpdate(BaseModel):
     lens: Optional[str] = None
     tags: Optional[str] = None
     is_featured: Optional[bool] = None
+    is_visible: Optional[bool] = None
 
 class GalleryMedia(GalleryMediaBase):
     id: str

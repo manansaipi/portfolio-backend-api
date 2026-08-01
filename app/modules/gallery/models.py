@@ -31,6 +31,7 @@ class GalleryMedia(Base):
     lens = Column(String(100), nullable=True)
     tags = Column(String(500), nullable=True)  # comma-separated
     is_featured = Column(Boolean, nullable=True, default=False)
+    is_visible = Column(Boolean, nullable=True, default=True)
 
 class GalleryCategory(Base):
     __tablename__ = "gallery_categories"

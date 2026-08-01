@@ -58,6 +58,7 @@ def get_all_media(
     limit: int = 100,
     category: Optional[str] = Query(None, description="Filter by category"),
     featured: Optional[bool] = Query(None, description="Filter featured items"),
+    include_hidden: Optional[bool] = Query(False, description="Include hidden items"),
     db: Session = Depends(database.get_db)
 ):
     query = db.query(models.GalleryMedia)
@@ -69,6 +70,10 @@ def get_all_media(
     # Apply featured filter
     if featured is not None:
         query = query.filter(models.GalleryMedia.is_featured == featured)
+        
+    # Apply hidden filter
+    if not include_hidden:
+        query = query.filter(models.GalleryMedia.is_visible == True)
     
     # Order by order asc (nulls last), then created_at desc
     media_list = query.order_by(

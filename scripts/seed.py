@@ -2,293 +2,133 @@ import json
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from app.core.database import SessionLocal, engine
-from app.models import Writing, Certificate, Comment, Experience
+from app.modules.writings.models import Writing
+from app.modules.certificates.models import Certificate
+from app.modules.experiences.models import Experience
+from app.modules.comments.models import Comment
+from app.modules.gallery.models import GalleryCategory, GalleryMedia
 from app.core.database import Base
 
-blogs = [
-	{
-		"title": "Grateful for the journey at LG Sinarmas Technology Solutions (LGSM) as part of the Smart Factory Development Team.",
-        "content": "Grateful for the journey at LG Sinarmas Technology Solutions (LGSM) as part of the Smart Factory Development Team.\n\nSince joining on December 9, 2024, I had the opportunity to contribute to EV Battery Smart Factory initiatives, working on backend systems that support core MES (Manufacturing Execution System) operations and workflows\n\nAlong the way, I was also involved in analyzing production data, validating backend features to ensure performance and reliability, and developing internal applications to support recruitment processes within LG Sinarmas Technology Solutions.\n\nToday (December 26, 2025) marks the end of this chapter. I’m proud of the work delivered, the systems built, and the lessons learned from an incredible team.\n\nThank you to everyone I had the chance to work with. Wishing LGSM and the Smart Factory team continued success ahead.✨",
-		"date": "Dec 27, 2025",
-		"author": "Abdul Mannan Saipi",
-		"authorImg": "/static/img/author/abdulmannansaipi.png",
-		"image": "https://media.licdn.com/dms/image/v2/D5622AQF3bv7cJC4TIg/feedshare-shrink_1280/B56Ztbk0ntKcAs-/0/1766767967176?e=1784764800&v=beta&t=LfU8TlZCEyrU14yoF1E--orIgim05fJG8Yw6zN6k8iA",
-        "images": [
-            "https://media.licdn.com/dms/image/v2/D562DAQEjRjOOdOJmCQ/profile-treasury-image-shrink_1280_1280/B56ZWHE3ywGUAQ-/0/1741727980319?e=1783868400&v=beta&t=-_2t1uMo6HEnZ_J56Dxp96No1KG63jZ4MbKJbZuWkAY",
-            "https://media.licdn.com/dms/image/v2/D562DAQEn2DAKojkkrw/profile-treasury-image-shrink_1280_1280/profile-treasury-image-shrink_1280_1280/0/1737023600328?e=1783868400&v=beta&t=Yt9OxVj6wN49F_BHhKocGEUFe1So14QytQ4brZ-LeNU",
-			"https://media.licdn.com/dms/image/v2/D562DAQE81nvkfXqqMA/profile-treasury-image-shrink_1280_1280/profile-treasury-image-shrink_1280_1280/0/1737023658186?e=1783868400&v=beta&t=xVrzEjo1dnKYYTvlfI2xNs9XI9091vJTmLXCQDJBZKI",
-        ]
-	},
-	{
-		"title": "Reflecting on an Incredible Internship Journey at Mattel",
-        "content": "🌟 Reflecting on an Incredible Internship Journey at Mattel 🌟\n\nYesterday, December 6th, marked the end of an incredible chapter in my professional journey—my internship at Mattel, which began on January 3rd, 2024. Over the past 11 months, I had the privilege of working with an amazing team in the EHS & Compliance Department, learning from industry experts, and contributing to exciting projects that challenged me to grow both personally and professionally.\n\nFrom developing innovative solutions to collaborating on impactful initiatives, my time at Mattel has been nothing short of transformative. I am deeply grateful for the support and guidance I received from my mentors, colleagues, and everyone who made this experience so enriching.\n\nA special thank you to the EHS & Compliance team for fostering such a collaborative and inspiring environment. I’ve gained invaluable skills, built lasting connections, and discovered new perspectives that I will carry with me throughout my career.\n\nAlthough this chapter has come to an end, I’m excited for what lies ahead as I continue to build on the foundation I’ve established here.\n\nTo my fellow interns and colleagues—thank you for making this journey unforgettable. Let’s stay connected, and I look forward to seeing all the amazing things you’ll achieve!\n\n#EndOfAnEra #MattelInternship #EHSTeam #Grateful #LearningAndGrowth",
-		"date": "Dec 07, 2024",
-		"author": "Abdul Mannan Saipi",
-		"authorImg": "/static/img/author/abdulmannansaipi.png",
-		"image": "https://media.licdn.com/dms/image/v2/D5622AQFkxwoPux7gEg/feedshare-shrink_1280/feedshare-shrink_1280/0/1733557069514?e=1784764800&v=beta&t=tAPL65CU2l3iwbxKDGlpxh378i_xDdjJXKr3BfCgCz0",
-        "images": [
-			"https://media.licdn.com/dms/image/v2/D5622AQFkxwoPux7gEg/feedshare-shrink_1280/feedshare-shrink_1280/0/1733557069514?e=1784764800&v=beta&t=tAPL65CU2l3iwbxKDGlpxh378i_xDdjJXKr3BfCgCz0",
-			"https://media.licdn.com/dms/image/v2/D5622AQH2lQAYPl33rQ/feedshare-shrink_800/feedshare-shrink_800/0/1733557069584?e=1784764800&v=beta&t=5TpzkPJVxw-YiX56wfTiKqlYcKrHlLNOJL4y65DkprU",
-			"https://media.licdn.com/dms/image/v2/D5622AQGjQbNdxfSHig/feedshare-shrink_800/feedshare-shrink_800/0/1733557067969?e=1784764800&v=beta&t=tvgIgYSBTLFFpdVeGD0YfURZwpyV4BRn3-zYVrGc5Us"
+gallery_categories = [
+    {'slug': 'nature-hall', 'label': 'Nature Hall'},
+    {'slug': 'professional-hall', 'label': 'Professional Hall'},
+    {'slug': 'adventure-hall', 'label': 'Adventure Hall'},
+    {'slug': 'family-hall', 'label': 'Family Hall'},
+]
 
-        ]
-	}
+gallery_media = [
+    {'id': '01a49cd2-6049-4b64-abc9-8d04fe704448', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1784915999/scrapbook_uploads/wgupboyehto7vacnsffc.webp', 'media_type': 'image', 'category': 'nature-hall', 'order': 28, 'caption': None, 'title': None, 'is_visible': True},
+    {'id': '06aa9660-9325-4990-a5a6-a72e17fca48c', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785038423/scrapbook_uploads/lr0cszatfyug2ij5wjsz.webp', 'media_type': 'image', 'category': 'adventure-hall', 'order': 16, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': '091578f2-3d61-49b7-aae1-dfd08e4a6770', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1784915983/scrapbook_uploads/htkbyxnkrlaun0hsu5d4.webp', 'media_type': 'image', 'category': 'nature-hall', 'order': 10, 'caption': None, 'title': None, 'is_visible': True},
+    {'id': '1fba3dff-e334-4268-a12b-85ede26f2fd7', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1784911698/portfolio_uploads/gemtahl4z8tg3yfvlte0.webp', 'media_type': 'image', 'category': 'nature-hall', 'order': 2, 'caption': '3371 mdpl', 'title': 'MT. Sumbing', 'is_visible': True},
+    {'id': '28f359d1-cfb7-4fb7-a0b6-d4e938d53b42', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785040013/scrapbook_uploads/isb3p6fzspnmj0s4mm1m.webp', 'media_type': 'image', 'category': 'family-hall', 'order': 14, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': '296215ec-a2f6-4077-b86b-e94b88db5223', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785039998/scrapbook_uploads/x7nn7sjgjh48ca5ctdse.webp', 'media_type': 'image', 'category': 'family-hall', 'order': 32, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': '2cb809b1-37cf-45fd-863c-70db5910e4e7', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785042065/scrapbook_uploads/xdkcrpecyv907acdyf8n.webp', 'media_type': 'image', 'category': 'nature-hall', 'order': 33, 'caption': None, 'title': None, 'is_visible': True},
+    {'id': '30e1f262-45cf-4aa2-a1aa-285fbf074a3d', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785042051/scrapbook_uploads/agmjantebe9fnmtaxqt5.webp', 'media_type': 'image', 'category': 'adventure-hall', 'order': 3, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': '3216b133-82c5-4770-9135-945288b80ac1', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785039267/scrapbook_uploads/wsmzhbvosyvvtxvrvffa.webp', 'media_type': 'image', 'category': 'professional-hall', 'order': 29, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': '38b74fc1-87bc-4182-901c-5f880d35404b', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1784915293/portfolio_uploads/soglcz4fvbuuyp9jyixw.webp', 'media_type': 'image', 'category': 'professional-hall', 'order': 10, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': '49190cf0-f49d-4173-91ea-30f155719652', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1784957179/scrapbook_uploads/pmbrf2aiuhpkyi123tux.webp', 'media_type': 'image', 'category': 'professional-hall', 'order': 21, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': '4d55636f-8468-4a5d-8c6e-224d116c187d', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1784912853/portfolio_uploads/hppwki0ccsveqfhfuyfk.webp', 'media_type': 'image', 'category': 'professional-hall', 'order': 4, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': '4dee7726-6cd4-4edb-bb10-eba6fde4b1ad', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1784912860/portfolio_uploads/nqnumfz46ftfwfgiyuiw.webp', 'media_type': 'image', 'category': 'professional-hall', 'order': 8, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': '4e33b7af-e5b3-4b43-98d3-e7c8f9b3e580', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785040021/scrapbook_uploads/avp4nvtw1vnudfb3mk7y.webp', 'media_type': 'image', 'category': 'family-hall', 'order': 4, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': '52299fa4-b92e-4a0e-ad7c-18778c7b218a', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1784914181/portfolio_uploads/av6whdikatomjssicglb.webp', 'media_type': 'image', 'category': 'professional-hall', 'order': 1, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': '56349219-6884-4543-82c9-55a84a48d228', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785051619/scrapbook_uploads/hgfaf4g73dutt6wngyrj.webp', 'media_type': 'image', 'category': 'adventure-hall', 'order': 9, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': '588f3f84-0a95-438e-a53e-e1a50f0e4e91', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785051596/scrapbook_uploads/k6zi3kyygrzmgdn2tpt0.webp', 'media_type': 'image', 'category': 'adventure-hall', 'order': 13, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': '62f3da6f-7fe7-4eb1-a65b-8bbcacce1f66', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785039989/scrapbook_uploads/myear9eqjtivgz5yrnii.webp', 'media_type': 'image', 'category': 'family-hall', 'order': 13, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': '6beb07ab-6f12-4cda-a13f-7230aae6be0c', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785042082/scrapbook_uploads/k2hlnk6v2topzacvtpdy.webp', 'media_type': 'image', 'category': 'nature-hall', 'order': 12, 'caption': None, 'title': None, 'is_visible': True},
+    {'id': '6cd9bae1-6e35-497d-a549-50384df44493', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785038927/scrapbook_uploads/kw7nxc2fg2azic833vtb.webp', 'media_type': 'image', 'category': 'professional-hall', 'order': 15, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': '6e92295e-643c-4172-87a6-fdd40beecd13', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785038922/scrapbook_uploads/ka7bm2mlo9rdywsmwxex.webp', 'media_type': 'image', 'category': 'professional-hall', 'order': 14, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': '737a17ad-e715-406f-98c1-a5ddc94484be', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1784912873/portfolio_uploads/hhyipccvtzj1go14ulvf.webp', 'media_type': 'image', 'category': 'professional-hall', 'order': 3, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': '7e60297b-9b55-472c-b9c8-126c44d29359', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785038903/scrapbook_uploads/u7fplxnsvt25bebkbzjk.webp', 'media_type': 'image', 'category': 'professional-hall', 'order': 27, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': '7fc169a0-dbca-4a3b-8d0f-329486d11fad', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785038916/scrapbook_uploads/rif4d1k0u6kpktonkd6f.webp', 'media_type': 'image', 'category': 'professional-hall', 'order': 23, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': '817dc069-912e-4f53-84b3-46e32b7a2f87', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785039689/scrapbook_uploads/tbl4tufwquyxwovpzkht.webp', 'media_type': 'image', 'category': 'nature-hall', 'order': 26, 'caption': None, 'title': None, 'is_visible': True},
+    {'id': '82c6a7b8-a95b-4934-963d-c81522139de7', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785042071/scrapbook_uploads/f6kri4qihjsca6bolri0.webp', 'media_type': 'image', 'category': 'nature-hall', 'order': 4, 'caption': None, 'title': None, 'is_visible': True},
+    {'id': '8c6e07a4-8d3b-4a23-bfec-c7abf08b4863', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785038275/scrapbook_uploads/slb14nnmzkuxlt4wlp8n.webp', 'media_type': 'image', 'category': 'nature-hall', 'order': 25, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': '9069650f-8f9e-4af0-b86a-16189e87c603', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1784910080/portfolio_uploads/mycedhk0jaqqqtgemaqm.webp', 'media_type': 'image', 'category': 'professional-hall', 'order': 7, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': '95c6d96e-ef60-4bc3-bb76-ab0d591e5bc1', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785039261/scrapbook_uploads/ru1cygwywmwyqz8bqeaj.webp', 'media_type': 'image', 'category': 'professional-hall', 'order': 24, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': 'a3245fad-16d7-4609-b4f1-1032bd204347', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785039709/scrapbook_uploads/gyji5zholgvywbxexgci.webp', 'media_type': 'image', 'category': 'adventure-hall', 'order': 8, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': 'a9323331-a3be-4fda-891b-8ca3b2e5a484', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785051610/scrapbook_uploads/m62w9pvwfouzbz5ss2ol.webp', 'media_type': 'image', 'category': 'nature-hall', 'order': 18, 'caption': None, 'title': None, 'is_visible': True},
+    {'id': 'bf54a62a-2278-4e03-b169-b7a07a555625', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1784910077/portfolio_uploads/jskvgtn3f1oz9lizcxfz.webp', 'media_type': 'image', 'category': 'professional-hall', 'order': 5, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': 'c383a6d1-20a0-44a6-a32b-d68433cda157', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1784957157/scrapbook_uploads/fqpizpi5ngbhbykgwl9m.webp', 'media_type': 'image', 'category': 'nature-hall', 'order': 6, 'caption': None, 'title': None, 'is_visible': True},
+    {'id': 'c5546199-7c28-4ac3-b9d0-d9369fbaa6d4', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1784957144/scrapbook_uploads/xfno6nxn0ggrpu6by6um.webp', 'media_type': 'image', 'category': 'professional-hall', 'order': 34, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': 'c5ae6d6d-c90f-47ff-bc60-2c67a5cfd4f2', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785039248/scrapbook_uploads/niblpfpyua7vbpdgkser.webp', 'media_type': 'image', 'category': 'professional-hall', 'order': 20, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': 'c807319c-e3f7-4953-8575-d4f8a51db8a1', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785042094/scrapbook_uploads/x2hnm4utkvk1phqc7xb2.webp', 'media_type': 'image', 'category': 'nature-hall', 'order': 31, 'caption': None, 'title': None, 'is_visible': True},
+    {'id': 'cbd492ba-03f4-461f-8ded-56d5947906be', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785037847/scrapbook_uploads/cim4fakhrbvr93houy8u.webp', 'media_type': 'image', 'category': 'professional-hall', 'order': 3, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': 'cc16820f-02cf-463c-b57f-5422901c0242', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785051791/scrapbook_uploads/lvaelkxxofy0gnwxcxvw.webp', 'media_type': 'image', 'category': 'family-hall', 'order': 17, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': 'cdcbe8db-3c87-41da-9447-0f4400502630', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1784913045/portfolio_uploads/aggeafl9yxtglspndnpe.webp', 'media_type': 'image', 'category': 'professional-hall', 'order': 0, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': 'cf339684-14f1-4939-9c2b-c4301944ac99', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1784914179/portfolio_uploads/r9dqqpqusq1hkjhc06vi.webp', 'media_type': 'image', 'category': 'professional-hall', 'order': 9, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': 'e57dbaa3-8af5-4f9d-9391-403a1699903f', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785042061/scrapbook_uploads/zxcljvn9og5fevj03ylc.webp', 'media_type': 'image', 'category': 'nature-hall', 'order': 19, 'caption': None, 'title': None, 'is_visible': True},
+    {'id': 'e7e6a086-7b84-46aa-842f-f0e17ec51643', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1784915306/portfolio_uploads/kzesreszzhjtmiqfozkn.webp', 'media_type': 'image', 'category': 'family-hall', 'order': 6, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': 'ec452089-c0bb-4fd7-91ff-8e4e918991df', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785051603/scrapbook_uploads/appqjivsxkw5yherutpu.webp', 'media_type': 'image', 'category': 'adventure-hall', 'order': 0, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': 'f73e42af-ae47-48dc-832d-df31b09891ba', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785038418/scrapbook_uploads/f7ss9wt2ostnvlcbtoex.webp', 'media_type': 'image', 'category': 'adventure-hall', 'order': 5, 'caption': '', 'title': '', 'is_visible': True},
+    {'id': 'f88b0dab-d073-4807-9aa8-c9b7e8a1b782', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785042088/scrapbook_uploads/wx7dxc3l1qmjehvulylz.webp', 'media_type': 'image', 'category': 'nature-hall', 'order': 30, 'caption': None, 'title': None, 'is_visible': True},
+    {'id': 'fc6eded9-e2de-4d6e-b4a9-29bc34902eb3', 'url': 'https://res.cloudinary.com/jxumeli6/image/upload/v1785052160/scrapbook_uploads/fvawa7vfrrx1ej42yauk.webp', 'media_type': 'image', 'category': 'family-hall', 'order': 7, 'caption': '', 'title': '', 'is_visible': True},
+]
+
+blogs = [
+    {'title': 'Grateful for the journey at LG Sinarmas Technology Solutions (LGSM) as part of the Smart Factory Development Team.', 'content': '<p>Grateful&nbsp;for&nbsp;the&nbsp;journey&nbsp;at&nbsp;<strong>LG&nbsp;Sinarmas&nbsp;Technology&nbsp;Solutions&nbsp;(LGSM)&nbsp;</strong>as&nbsp;part&nbsp;of&nbsp;the&nbsp;<strong>Smart&nbsp;Factory&nbsp;Development&nbsp;Team.</strong></p><p></p><p>Since&nbsp;joining&nbsp;on&nbsp;December&nbsp;9,&nbsp;2024,&nbsp;I&nbsp;had&nbsp;the&nbsp;opportunity&nbsp;to&nbsp;contribute&nbsp;to&nbsp;EV&nbsp;Battery&nbsp;Smart&nbsp;Factory&nbsp;initiatives,&nbsp;working&nbsp;on&nbsp;backend&nbsp;systems&nbsp;that&nbsp;support&nbsp;core&nbsp;MES&nbsp;(Manufacturing&nbsp;Execution&nbsp;System)&nbsp;operations&nbsp;and&nbsp;workflows</p><p></p><p>Along&nbsp;the&nbsp;way,&nbsp;I&nbsp;was&nbsp;also&nbsp;involved&nbsp;in&nbsp;analyzing&nbsp;production&nbsp;data,&nbsp;validating&nbsp;backend&nbsp;features&nbsp;to&nbsp;ensure&nbsp;performance&nbsp;and&nbsp;reliability,&nbsp;and&nbsp;developing&nbsp;internal&nbsp;applications&nbsp;to&nbsp;support&nbsp;recruitment&nbsp;processes&nbsp;within&nbsp;LG&nbsp;Sinarmas&nbsp;Technology&nbsp;Solutions.</p><p></p><p><img src="https://portofolio-backend-api.fastapicloud.dev/static/img/uploads/happy.jpeg"></p><p><strong>Today&nbsp;(December&nbsp;26,&nbsp;2025)&nbsp;</strong>marks&nbsp;the&nbsp;end&nbsp;of&nbsp;this&nbsp;chapter.&nbsp;I’m&nbsp;proud&nbsp;of&nbsp;the&nbsp;work&nbsp;delivered,&nbsp;the&nbsp;systems&nbsp;built,&nbsp;and&nbsp;the&nbsp;lessons&nbsp;learned&nbsp;from&nbsp;an&nbsp;incredible&nbsp;team.</p><p></p><p>Thank&nbsp;you&nbsp;to&nbsp;everyone&nbsp;I&nbsp;had&nbsp;the&nbsp;chance&nbsp;to&nbsp;work&nbsp;with.&nbsp;Wishing&nbsp;LGSM&nbsp;and&nbsp;the&nbsp;Smart&nbsp;Factory&nbsp;team&nbsp;continued&nbsp;success&nbsp;ahead.✨</p>', 'date': 'Dec 27, 2025', 'author': 'Abdul Mannan Saipi', 'authorImg': '/static/img/author/abdulmannansaipi.png', 'image': 'https://res.cloudinary.com/jxumeli6/image/upload/v1784910077/portfolio_uploads/jskvgtn3f1oz9lizcxfz.webp', 'images': ['https://res.cloudinary.com/jxumeli6/image/upload/v1784910080/portfolio_uploads/mycedhk0jaqqqtgemaqm.webp', 'https://res.cloudinary.com/jxumeli6/image/upload/v1784914179/portfolio_uploads/r9dqqpqusq1hkjhc06vi.webp', 'https://res.cloudinary.com/jxumeli6/image/upload/v1784914181/portfolio_uploads/av6whdikatomjssicglb.webp']},
+    {'title': ' Reflecting on an Incredible Internship Journey at Mattel ', 'content': '<p>&nbsp;Reflecting&nbsp;on&nbsp;an&nbsp;Incredible&nbsp;Internship&nbsp;Journey&nbsp;at&nbsp;Mattel&nbsp;</p><p><img src="https://portofolio-backend-api.fastapicloud.dev/static/img/uploads/cry.jpeg"></p><p><strong>Yesterday,</strong>&nbsp;<strong>December&nbsp;6th</strong>,&nbsp;marked&nbsp;the&nbsp;end&nbsp;of&nbsp;an&nbsp;incredible&nbsp;chapter&nbsp;in&nbsp;my&nbsp;professional&nbsp;journey—my&nbsp;internship&nbsp;at&nbsp;Mattel,&nbsp;which&nbsp;began&nbsp;on&nbsp;January&nbsp;3rd,&nbsp;2024.&nbsp;Over&nbsp;the&nbsp;past&nbsp;11&nbsp;months,&nbsp;I&nbsp;had&nbsp;the&nbsp;privilege&nbsp;of&nbsp;working&nbsp;with&nbsp;an&nbsp;amazing&nbsp;team&nbsp;in&nbsp;the&nbsp;EHS&nbsp;&amp;&nbsp;Compliance&nbsp;Department,&nbsp;learning&nbsp;from&nbsp;industry&nbsp;experts,&nbsp;and&nbsp;contributing&nbsp;to&nbsp;exciting&nbsp;projects&nbsp;that&nbsp;challenged&nbsp;me&nbsp;to&nbsp;grow&nbsp;both&nbsp;personally&nbsp;and&nbsp;professionally.</p><p></p><p>From&nbsp;developing&nbsp;innovative&nbsp;solutions&nbsp;to&nbsp;collaborating&nbsp;on&nbsp;impactful&nbsp;initiatives,&nbsp;my&nbsp;time&nbsp;at&nbsp;Mattel&nbsp;has&nbsp;been&nbsp;nothing&nbsp;short&nbsp;of&nbsp;transformative.&nbsp;I&nbsp;am&nbsp;deeply&nbsp;grateful&nbsp;for&nbsp;the&nbsp;support&nbsp;and&nbsp;guidance&nbsp;I&nbsp;received&nbsp;from&nbsp;my&nbsp;mentors,&nbsp;colleagues,&nbsp;and&nbsp;everyone&nbsp;who&nbsp;made&nbsp;this&nbsp;experience&nbsp;so&nbsp;enriching.</p><p></p><p>A&nbsp;special&nbsp;thank&nbsp;you&nbsp;to&nbsp;the&nbsp;EHS&nbsp;&amp;&nbsp;Compliance&nbsp;team&nbsp;for&nbsp;fostering&nbsp;such&nbsp;a&nbsp;collaborative&nbsp;and&nbsp;inspiring&nbsp;environment.&nbsp;I’ve&nbsp;gained&nbsp;invaluable&nbsp;skills,&nbsp;built&nbsp;lasting&nbsp;connections,&nbsp;and&nbsp;discovered&nbsp;new&nbsp;perspectives&nbsp;that&nbsp;I&nbsp;will&nbsp;carry&nbsp;with&nbsp;me&nbsp;throughout&nbsp;my&nbsp;career.</p><p></p><p>Although&nbsp;this&nbsp;chapter&nbsp;has&nbsp;come&nbsp;to&nbsp;an&nbsp;end,&nbsp;I’m&nbsp;excited&nbsp;for&nbsp;what&nbsp;lies&nbsp;ahead&nbsp;as&nbsp;I&nbsp;continue&nbsp;to&nbsp;build&nbsp;on&nbsp;the&nbsp;foundation&nbsp;I’ve&nbsp;established&nbsp;here.</p><p></p><p>To&nbsp;my&nbsp;fellow&nbsp;interns&nbsp;and&nbsp;colleagues—thank&nbsp;you&nbsp;for&nbsp;making&nbsp;this&nbsp;journey&nbsp;unforgettable.&nbsp;Let’s&nbsp;stay&nbsp;connected,&nbsp;and&nbsp;I&nbsp;look&nbsp;forward&nbsp;to&nbsp;seeing&nbsp;all&nbsp;the&nbsp;amazing&nbsp;things&nbsp;you’ll&nbsp;achieve!</p><p></p><p>#EndOfAnEra&nbsp;#MattelInternship&nbsp;#EHSTeam&nbsp;#Grateful&nbsp;#LearningAndGrowth</p>', 'date': 'Dec 07, 2024', 'author': 'Abdul Mannan Saipi', 'authorImg': '/static/img/author/abdulmannansaipi.png', 'image': 'https://res.cloudinary.com/jxumeli6/image/upload/v1784913045/portfolio_uploads/aggeafl9yxtglspndnpe.webp', 'images': ['https://res.cloudinary.com/jxumeli6/image/upload/v1784912853/portfolio_uploads/hppwki0ccsveqfhfuyfk.webp', 'https://res.cloudinary.com/jxumeli6/image/upload/v1784912860/portfolio_uploads/nqnumfz46ftfwfgiyuiw.webp', 'https://res.cloudinary.com/jxumeli6/image/upload/v1784912873/portfolio_uploads/hhyipccvtzj1go14ulvf.webp']},
 ]
 
 certificates = [
-	{
-		"name": "Bangkit Academy led by Google, Tokopedia, Gojek, & Traveloka",
-		"year": "2023",
-		"desc": "Bangkit Academy is a bootcamp led by major tech companies in Indonesia and is part of the Kampus Merdeka program.",
-		"img": "/static/img/certificates/bangkit.png",
-		"bgColor": "bg-gray-500",
-		"link": "https://drive.google.com/file/d/13mgCEnwhO1DTpc7c_z0Fs8cNt-BHrBR4/view?usp=sharing",
-	},
-	{
-		"name": "The Bits and Bytes of Computer Networking",
-		"year": "2023",
-		"desc": "I learned about different types of networks, how data travels across the internet, the OSI and TCP/IP models, network hardware like routers and switches, IP addressing, DNS, and troubleshooting tools. ",
-		"img": "/static/img/certificates/coursera1.png",
-		"bgColor": "bg-gray-500",
-		"link": "https://www.coursera.org/account/accomplishments/certificate/W7HL5ZKJY2JY",
-	},
-	{
-		"name": "System Administration and IT Infrastructure Services",
-		"year": "2023",
-		"desc": "I learned how to set up system services, manage security, and ensure the smooth operation of IT environments,",
-		"img": "/static/img/certificates/coursera2.png",
-		"bgColor": "bg-gray-500",
-		"link": "https://www.coursera.org/account/accomplishments/certificate/SASKPNKXVL54",
-	},
-	{
-		"name": "Clean Code",
-		"year": "2025",
-		"desc": "This course taught me the principles of writing clean, readable, and maintainable code including refactoring, naming conventions, and SOLID principles.",
-		"img": "/static/img/certificates/cleancode.jpg",
-		"bgColor": "bg-gray-500",
-		"link": "https://www.udemy.com/certificate/UC-cb95c7f8-4a41-4553-88f9-b8309617bd59",
-	},
-	{
-		"name": "Data Structures & Algorithms",
-		"year": "2025",
-		"desc": "I learned how to solve coding problems using data structures like linked lists, trees, and graphs, and algorithms such as sorting, recursion, and dynamic programming.",
-		"img": "/static/img/certificates/dsa.jpg",
-		"bgColor": "bg-gray-500",
-		"link": "https://www.udemy.com/certificate/UC-402b38d3-d4a7-4fd1-95b2-79d6ecea97b2",
-	},
-	{
-		"name": "React Developer Course",
-		"year": "2025",
-		"desc": "I learned the fundamentals of React, including creating components, managing state and props, using JSX, and applying effects and context.",
-		"img": "/static/img/certificates/react.jpg",
-		"bgColor": "bg-gray-500",
-		"link": "https://www.udemy.com/certificate/UC-c9c96781-c93f-4a13-84f7-9090bd3a1384",
-	},
-	{
-		"name": "SQL & Database Management",
-		"year": "2025",
-		"desc": "I learned how to design and manage relational databases using Microsoft SQL Server. I practiced writing SQL queries (CRUD), creating tables, views, stored procedures, and managing users, backups, and security.",
-		"img": "/static/img/certificates/sql.jpg",
-		"bgColor": "bg-gray-500",
-		"link": "https://www.udemy.com/certificate/UC-5c1cea8a-a851-4e5c-91c1-23eb1217230d",
-	},
-	{
-		"name": "Java Programming",
-		"year": "2025",
-		"desc": "I learned the basics of Java programming, including variables, loops, methods, conditionals, and object-oriented programming (OOP).",
-		"img": "/static/img/certificates/java.jpg",
-		"bgColor": "bg-gray-500",
-		"link": "https://www.udemy.com/certificate/UC-0cf7996f-5eb2-4835-ab45-541329091aba",
-	},
-	{
-		"name": "Build Back-End Applications with Google Cloud",
-		"year": "2023",
-		"desc": "I learned the basics of back-end development, Node.js, creating RESTful APIs, deploying them on Google Compute Engine, and testing them with Postman.",
-		"img": "/static/img/certificates/dicoding2.png",
-		"bgColor": "bg-gray-500",
-		"link": "https://www.dicoding.com/certificates/ERZR0QE5NXYV",
-	},
-	{
-		"name": "Become a Google Cloud Engineer",
-		"year": "2023",
-		"desc": "I learned the basics of cloud computing with Google Cloud, including how to build, manage, and monitor cloud apps through hands-on practice and a final project.",
-		"img": "/static/img/certificates/dicoding1.png",
-		"bgColor": "bg-gray-500",
-		"link": "https://www.dicoding.com/certificates/1RXY6O233ZVM",
-	},
-	{
-		"name": "JavaScript Programming",
-		"year": "2023",
-		"desc": "I learned concepts like variables, loops, data structures (e.g., Arrays, Objects), functions, and object-oriented programming (OOP). The course also covers asynchronous programming, error handling, and working with Node.js",
-		"img": "/static/img/certificates/dicoding3.png",
-		"bgColor": "bg-gray-500",
-		"link": "https://www.dicoding.com/certificates/6RPN6LE38P2M",
-	},
-	{
-		"name": "Web Development",
-		"year": "2023",
-		"desc": "The course covers creating web page structure with HTML and enhancing web page appearance with CSS. It also includes learning advanced CSS techniques, responsive design with Flexbox, and building a simple website project.",
-		"img": "/static/img/certificates/dicoding4.png",
-		"bgColor": "bg-gray-500",
-		"link": "https://www.dicoding.com/certificates/1OP8587JQPQK",
-	},
-	{
-		"name": "Google Cloud Skill Boost",
-		"year": "2023",
-		"desc": "I’ve earned several Google Cloud Skills Boost badges. Some of the badges include Kubernetes, Cloud Run, and hybrid cloud applications. I also completed courses on Google Cloud fundamentals, Terraform, networking, security, and machine learning APIs.",
-		"img": "/static/img/certificates/gcsb.png",
-		"bgColor": "bg-gray-500",
-		"link": "https://www.cloudskillsboost.google/public_profiles/5d03fd6c-a138-4e59-b072-85c1174c5051",
-	},
+    {'name': 'Data Structures & Algorithms', 'year': '2025', 'desc': 'I learned how to solve coding problems using data structures like linked lists, trees, and graphs, and algorithms such as sorting, recursion, and dynamic programming.', 'img': '/static/img/certificates/dsa.jpg', 'bgColor': 'bg-gray-500', 'link': 'https://www.udemy.com/certificate/UC-402b38d3-d4a7-4fd1-95b2-79d6ecea97b2'},
+    {'name': 'The Bits and Bytes of Computer Networking', 'year': '2023', 'desc': 'I learned about different types of networks, how data travels across the internet, the OSI and TCP/IP models, network hardware like routers and switches, IP addressing, DNS, and troubleshooting tools. ', 'img': '/static/img/certificates/coursera1.png', 'bgColor': 'bg-gray-500', 'link': 'https://www.coursera.org/account/accomplishments/certificate/W7HL5ZKJY2JY'},
+    {'name': 'Build Back-End Applications with Google Cloud', 'year': '2023', 'desc': 'I learned the basics of back-end development, Node.js, creating RESTful APIs, deploying them on Google Compute Engine, and testing them with Postman.', 'img': '/static/img/certificates/dicoding2.png', 'bgColor': 'bg-gray-500', 'link': 'https://www.dicoding.com/certificates/ERZR0QE5NXYV'},
+    {'name': 'System Administration and IT Infrastructure Services', 'year': '2023', 'desc': 'I learned how to set up system services, manage security, and ensure the smooth operation of IT environments,', 'img': '/static/img/certificates/coursera2.png', 'bgColor': 'bg-gray-500', 'link': 'https://www.coursera.org/account/accomplishments/certificate/SASKPNKXVL54'},
+    {'name': 'Google Cloud Skill Boost', 'year': '2023', 'desc': 'I’ve earned several Google Cloud Skills Boost badges. Some of the badges include Kubernetes, Cloud Run, and hybrid cloud applications. I also completed courses on Google Cloud fundamentals, Terraform, networking, security, and machine learning APIs.', 'img': '/static/img/certificates/gcsb.png', 'bgColor': 'bg-gray-500', 'link': 'https://www.cloudskillsboost.google/public_profiles/5d03fd6c-a138-4e59-b072-85c1174c5051'},
+    {'name': 'Bangkit Academy led by Google, Tokopedia, Gojek, & Traveloka', 'year': '2023', 'desc': 'Bangkit Academy is a bootcamp led by major tech companies in Indonesia and is part of the Kampus Merdeka program.', 'img': '/static/img/certificates/bangkit.png', 'bgColor': 'bg-gray-500', 'link': 'https://drive.google.com/file/d/13mgCEnwhO1DTpc7c_z0Fs8cNt-BHrBR4/view?usp=sharing'},
+    {'name': 'Java Programming', 'year': '2025', 'desc': 'I learned the basics of Java programming, including variables, loops, methods, conditionals, and object-oriented programming (OOP).', 'img': '/static/img/certificates/java.jpg', 'bgColor': 'bg-gray-500', 'link': 'https://www.udemy.com/certificate/UC-0cf7996f-5eb2-4835-ab45-541329091aba'},
+    {'name': 'Become a Google Cloud Engineer', 'year': '2023', 'desc': 'I learned the basics of cloud computing with Google Cloud, including how to build, manage, and monitor cloud apps through hands-on practice and a final project.', 'img': '/static/img/certificates/dicoding1.png', 'bgColor': 'bg-gray-500', 'link': 'https://www.dicoding.com/certificates/1RXY6O233ZVM'},
+    {'name': 'React Developer Course', 'year': '2025', 'desc': 'I learned the fundamentals of React, including creating components, managing state and props, using JSX, and applying effects and context.', 'img': '/static/img/certificates/react.jpg', 'bgColor': 'bg-gray-500', 'link': 'https://www.udemy.com/certificate/UC-c9c96781-c93f-4a13-84f7-9090bd3a1384'},
+    {'name': 'SQL & Database Management', 'year': '2025', 'desc': 'I learned how to design and manage relational databases using Microsoft SQL Server. I practiced writing SQL queries (CRUD), creating tables, views, stored procedures, and managing users, backups, and security.', 'img': '/static/img/certificates/sql.jpg', 'bgColor': 'bg-gray-500', 'link': 'https://www.udemy.com/certificate/UC-5c1cea8a-a851-4e5c-91c1-23eb1217230d'},
+    {'name': 'JavaScript Programming', 'year': '2023', 'desc': 'I learned concepts like variables, loops, data structures (e.g., Arrays, Objects), functions, and object-oriented programming (OOP). The course also covers asynchronous programming, error handling, and working with Node.js', 'img': '/static/img/certificates/dicoding3.png', 'bgColor': 'bg-gray-500', 'link': 'https://www.dicoding.com/certificates/6RPN6LE38P2M'},
+    {'name': 'Web Development', 'year': '2023', 'desc': 'The course covers creating web page structure with HTML and enhancing web page appearance with CSS. It also includes learning advanced CSS techniques, responsive design with Flexbox, and building a simple website project.', 'img': '/static/img/certificates/dicoding4.png', 'bgColor': 'bg-gray-500', 'link': 'https://www.dicoding.com/certificates/1OP8587JQPQK'},
+    {'name': 'Clean Code', 'year': '2025', 'desc': 'This course taught me the principles of writing clean, readable, and maintainable code including refactoring, naming conventions, and SOLID principles.', 'img': '/static/img/certificates/cleancode.jpg', 'bgColor': 'bg-gray-500', 'link': 'https://www.udemy.com/certificate/UC-cb95c7f8-4a41-4553-88f9-b8309617bd59'},
 ]
 
 works = [
-	{
-		"company": "Samsung R&D Indonesia",
-		"role": "Software Engineer",
-		"desc": "Since December 2025, I've been working at Samsung Research & Development Indonesia",
-		"startDate": "Dec 2025",
-		"endDate": "Present",
-		"img": "/static/img/profiles/SAMSUNG.jpg",
-		"points": [],
-		"iamges": [],
-		"bgColor": "bg-gray-100",
-		"url": "",
-	},
-	{
-		"company": "LG Sinar Mas",
-		"role": "Software Engineer",
-		"desc": "From December 2024 to December 2025, I've been working as a Software Engineer at LG Sinar Mas Technology Solutions, where I contribute to the development of smart factory systems for EV (Electric Vehicle) battery manufacturing across multiple countries.",
-		"startDate": "Dec 2024",
-		"endDate": "Dec 2025",
-		"img": "/static/img/profiles/galadinerlgsm.JPEG",
-		"points": [
-			"Contributed to the development of smart factory systems for EV battery manufacturing across multiple countries such as South Korea, the United States, China, Poland, and Indonesia.",
-			"Designed and maintained backend logic to support core MES (Manufacturing Execution System) operations, ensuring seamless and accurate production workflows.",
-			"Analyze production data and validate backend features to ensure performance, reliability, and data accuracy.",
-			"Developed job portal and job posting applications for LG Sinarmas Technology Solutions to streamline recruitment processes.",
-		],
-		"iamges": ["/static/img/profiles/lg1.jpeg", "/static/img/profiles/lg2.jpeg"],
-		"bgColor": "bg-neutral-800",
-		"url": "",
-	},
-	{
-		"company": "PT. \u00A0Mattel Indonesia",
-		"role": "Full Stack Developer",
-		"desc": "From January to December 2024, I worked as a Full Stack Developer at Mattel Indonesia for 1 year, focusing on building internal systems and improving operational efficiency.",
-		"startDate": "Jan 2024",
-		"endDate": "Dec 2024",
-		"img": "/static/img/profiles/mattel.jpg",
-		"points": [
-			"I led the digital transformation of manual processes by developing systems like Audit Process, Reporting, Waste Management, Compliance Monitoring, Incident Reporting, and Inventory Management using ASP.NET, Power Apps, and SQL Server.",
-			"Maintained and managed databases with SQL Server and visualized data through Power BI; used Power Automate and Gateway for streamlined workflows and secure access.",
-			"Recognized as a semi-finalist (Top 8) in the Global Manufacturing Internship Competition for innovative and impactful contributions.",
-			"Collaborated with cross-functional teams to turn business requirements into efficient technical solutions, receiving praise for innovation and problem-solving.",
-		],
-		"iamges": ["/static/img/profiles/mattel2.jpeg", "/static/img/profiles/mattel1.jpeg"],
-		"bgColor": "bg-neutral-400",
-		"url": "",
-	},
-	{
-		"company": "Sekretariat Jendral DPR RI",
-		"role": "IT Programmer",
-		"desc": "Interned at Sekretariat Jendral DPR RI for 5 months through the Kampus Merdeka program, working on data visualization tools and system architecture for legal data management.",
-		"startDate": "Aug 2023",
-		"endDate": "Dec 2023",
-		"img": "/static/img/profiles/dpr.JPEG",
-		"points": [
-			"Developed a data visualization dashboard similar to Tableau/Power BI using Laravel and SQL, allowing users to create customizable charts and layouts for personalized analysis.",
-			"Built an efficient data scheduler with Node.js that periodically pulls optimized datasets from the main database, significantly improving load times and performance.",
-			"Designed the improvement system of the 'Dashboard Website Program Legislasi Nasional DPR', including architecture planning, use case diagrams, activity diagrams, and ERDs to improve legal data management and website accountability.",
-		],
-		"iamges": ["/static/img/profiles/dpr1.jpeg", "/static/img/profiles/dpr2.jpeg"],
-		"bgColor": "bg-zinc-700",
-		"url": "",
-	},
+    {'company': 'Sekretariat Jendral DPR RI', 'role': 'IT Programmer', 'startDate': 'Aug 2023', 'endDate': 'Dec 2023', 'desc': 'Interned at Sekretariat Jendral DPR RI for 5 months through the Kampus Merdeka program, working on data visualization tools and system architecture for legal data management.', 'img': '/static/img/profiles/dpr.JPEG', 'points': ['Developed a data visualization dashboard similar to Tableau/Power BI using Laravel and SQL, allowing users to create customizable charts and layouts for personalized analysis.', 'Built an efficient data scheduler with Node.js that periodically pulls optimized datasets from the main database, significantly improving load times and performance.', "Designed the improvement system of the 'Dashboard Website Program Legislasi Nasional DPR', including architecture planning, use case diagrams, activity diagrams, and ERDs to improve legal data management and website accountability."], 'iamges': ['/static/img/profiles/dpr1.jpeg', '/static/img/profiles/dpr2.jpeg'], 'bgColor': 'bg-zinc-700', 'url': ''},
+    {'company': 'LG Sinar Mas', 'role': 'Software Engineer', 'startDate': 'Dec 2024', 'endDate': 'Dec 2025', 'desc': "From December 2024 to December 2025, I've been working as a Software Engineer at LG Sinar Mas Technology Solutions, where I contribute to the development of smart factory systems for EV (Electric Vehicle) battery manufacturing across multiple countries.", 'img': '/static/img/profiles/galadinerlgsm.JPEG', 'points': ['Contributed to the development of smart factory systems for EV battery manufacturing across multiple countries such as South Korea, the United States, China, Poland, and Indonesia.', 'Designed and maintained backend logic to support core MES (Manufacturing Execution System) operations, ensuring seamless and accurate production workflows.', 'Analyze production data and validate backend features to ensure performance, reliability, and data accuracy.', 'Developed job portal and job posting applications for LG Sinarmas Technology Solutions to streamline recruitment processes.'], 'iamges': ['/static/img/profiles/lg1.jpeg', '/static/img/profiles/lg2.jpeg'], 'bgColor': 'bg-neutral-800', 'url': ''},
+    {'company': 'PT. \xa0Mattel Indonesia', 'role': 'Full Stack Developer', 'startDate': 'Jan 2024', 'endDate': 'Dec 2024', 'desc': 'From January to December 2024, I worked as a Full Stack Developer at Mattel Indonesia for 1 year, focusing on building internal systems and improving operational efficiency.', 'img': '/static/img/profiles/mattel.jpg', 'points': ['I led the digital transformation of manual processes by developing systems like Audit Process, Reporting, Waste Management, Compliance Monitoring, Incident Reporting, and Inventory Management using ASP.NET, Power Apps, and SQL Server.', 'Maintained and managed databases with SQL Server and visualized data through Power BI; used Power Automate and Gateway for streamlined workflows and secure access.', 'Recognized as a semi-finalist (Top 8) in the Global Manufacturing Internship Competition for innovative and impactful contributions.', 'Collaborated with cross-functional teams to turn business requirements into efficient technical solutions, receiving praise for innovation and problem-solving.'], 'iamges': ['/static/img/profiles/mattel2.jpeg', '/static/img/profiles/mattel1.jpeg'], 'bgColor': 'bg-neutral-400', 'url': ''},
+    {'company': 'Samsung R&D Indonesia', 'role': 'Software Engineer', 'startDate': 'Dec 2025', 'endDate': 'Present', 'desc': "Since December 2025, I've been working at Samsung Research & Development Indonesia", 'img': '/static/img/profiles/SAMSUNG.jpg', 'points': [], 'iamges': [], 'bgColor': 'bg-gray-100', 'url': ''},
 ]
 
-comments = [
-    {
-        "name": "John Doe",
-        "date": "Apr 5, 2025",
-        "comment": "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Ex eos ipsam laudantium minus debitis neque iste autem alias eius distinctio.",
-        "totalLikes": 83,
-        "profileImg": "/static/img/author/no_profile.jpeg",
-    },
-    {
-        "name": "Win Dev",
-        "date": "July 25, 2029",
-        "comment": "Lorem ipsum dolor. Ex eos ipsam laudantium minus debitis neque iste autem alias eius distinctio.",
-        "totalLikes": 99,
-        "profileImg": "/static/img/author/no_profile.jpeg",
-    },
-]
-
-def get_wib_time():
-    return datetime.now(ZoneInfo("Asia/Jakarta"))
 
 def seed_db():
-    Base.metadata.create_all(bind=engine)
+    print("Starting database seed...")
     db = SessionLocal()
     
     try:
-        # Clear existing data
+        # Clear existing data safely
         db.query(Comment).delete()
         db.query(Writing).delete()
         db.query(Certificate).delete()
         db.query(Experience).delete()
-        
-        # 1. Seed Blogs (Writings)
-        writing_objects = []
-        for i, b in enumerate(blogs, 1):
-            pub_date = datetime.strptime(b["date"], "%b %d, %Y").replace(tzinfo=ZoneInfo("Asia/Jakarta"))
-            writing = Writing(
-                title=b["title"],
-                content=b.get("content", ""), 
-                published_at=pub_date,
-                author=b["author"],
-                author_img=b["authorImg"],
-                image=b["image"],
-                images=json.dumps(b.get("images", [])),
-                order=i
-            )
-            db.add(writing)
-            writing_objects.append(writing)
-            
+        db.query(GalleryCategory).delete()
+        db.query(GalleryMedia).delete()
         db.commit()
         
-        # 2. Seed Certificates
+        for i, b in enumerate(blogs, 1):
+            w = Writing(title=b["title"], content=b["content"], date=b["date"], author=b["author"], author_img=b["authorImg"], image=b["image"], images=json.dumps(b.get("images", [])), order=i)
+            db.add(w)
+            
         for i, c in enumerate(certificates, 1):
-            cert = Certificate(
-                name=c["name"],
-                year=c["year"],
-                description=c["desc"],
-                img=c["img"],
-                bg_color=c["bgColor"],
-                link=c["link"],
-                order=i
-            )
+            cert = Certificate(name=c["name"], year=c["year"], description=c["desc"], img=c["img"], bg_color=c["bgColor"], link=c["link"], order=i)
             db.add(cert)
             
-        # 3. Seed Works (Experiences)
         for i, w in enumerate(works, 1):
-            exp = Experience(
-                company=w["company"],
-                position=w["role"],
-                start_date=w["startDate"],
-                end_date=w["endDate"],
-                description=w["desc"],
-                img=w["img"],
-                points=json.dumps(w["points"]),
-                images=json.dumps(w["iamges"]), # Keeping original typo keys
-                bg_color=w["bgColor"],
-                url=w["url"],
-                order=i
-            )
+            exp = Experience(company=w["company"], position=w["role"], start_date=w["startDate"], end_date=w["endDate"], description=w["desc"], img=w["img"], points=json.dumps(w["points"]), images=json.dumps(w["iamges"]), bg_color=w["bgColor"], url=w["url"], order=i)
             db.add(exp)
             
+        for c in gallery_categories:
+            cat = GalleryCategory(slug=c["slug"], label=c["label"])
+            db.add(cat)
+            
+        for m in gallery_media:
+            med = GalleryMedia(id=m["id"], url=m["url"], media_type=m["media_type"], category=m["category"], order=m["order"], caption=m["caption"], title=m["title"], is_visible=m["is_visible"])
+            db.add(med)
+            
         db.commit()
-        
         print("Successfully seeded the database!")
         
     except Exception as e:

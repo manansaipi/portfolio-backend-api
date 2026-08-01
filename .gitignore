@@ -4,3 +4,5 @@ __pycache__/
 *.pyc
 portfolio.db
 test.db
+database_backup/
+database_backup.json
