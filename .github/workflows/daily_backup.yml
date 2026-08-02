@@ -57,9 +57,10 @@ jobs:
           print(f'📁 Created {len(data.get(\"tables\", {}))} table files in {folder}')
           "
 
-          # Zip the backup folder
-          zip -r "backup_${DATE}.zip" "backup_${DATE}/"
-          echo "BACKUP_FILE=backup_${DATE}.zip" >> $GITHUB_ENV
+          # Encrypt backup with AES-256 using 7z (password-protected, filenames encrypted too)
+          sudo apt-get install -y p7zip-full > /dev/null 2>&1
+          7z a -p"${{ secrets.BACKUP_SECRET_KEY }}" -mhe=on "backup_${DATE}.7z" "backup_${DATE}/"
+          echo "BACKUP_FILE=backup_${DATE}.7z" >> $GITHUB_ENV
           echo "BACKUP_TAG=backup-${DATE}" >> $GITHUB_ENV
           echo "BACKUP_DATE=${DATE}" >> $GITHUB_ENV
 
@@ -73,8 +74,7 @@ jobs:
 
             **Date:** ${{ env.BACKUP_DATE }} UTC
             **Contains:** All database tables exported as JSON files.
-
-            Download the zip and extract to restore.
+            🔒 **Encrypted** with AES-256. Use your `BACKUP_SECRET_KEY` to extract.
           files: ${{ env.BACKUP_FILE }}
 
       - name: Cleanup Old Backups (Keep Latest 3)
