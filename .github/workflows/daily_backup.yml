@@ -74,7 +74,6 @@ jobs:
 
             **Date:** ${{ env.BACKUP_DATE }} UTC
             **Contains:** All database tables exported as JSON files.
-            🔒 **Encrypted** with AES-256. Use your `BACKUP_SECRET_KEY` to extract.
           files: ${{ env.BACKUP_FILE }}
 
       - name: Cleanup Old Backups (Keep Latest 3)
