@@ -95,22 +95,3 @@ jobs:
             done
             echo "✅ Old backups cleaned up. Only latest 3 remain."
           fi
-
-      - name: Send Telegram Notification
-        if: always()
-        run: |
-          BOT_TOKEN="${{ secrets.TELEGRAM_BOT_TOKEN }}"
-          CHAT_ID="${{ secrets.TELEGRAM_CHAT_ID }}"
-
-          if [ -z "$BOT_TOKEN" ] || [ -z "$CHAT_ID" ]; then
-            echo "Telegram credentials not set, skipping notification."
-            exit 0
-          fi
-
-          if [ "${{ job.status }}" == "success" ]; then
-            MSG="🗄️ *Daily Database Backup Complete!*%0A%0A✅ Backup saved as GitHub Release%0A📅 Date: ${{ env.BACKUP_DATE }} UTC%0A🏷️ Tag: \`${{ env.BACKUP_TAG }}\`"
-          else
-            MSG="❌ *Daily Database Backup FAILED!*%0A%0A⚠️ Check GitHub Actions for details."
-          fi
-
-          curl -sS "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${MSG}&parse_mode=Markdown" > /dev/null 2>&1 || true
