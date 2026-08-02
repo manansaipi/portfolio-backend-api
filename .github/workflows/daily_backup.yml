@@ -83,7 +83,7 @@ jobs:
           echo "🧹 Checking for old backup releases to clean up..."
 
           # List all releases with backup- tag, sorted oldest first
-          RELEASES=$(gh release list --limit 100 | grep "backup-" | tail -n +4 | awk '{print $1}')
+          RELEASES=$(gh release list --limit 100 --json tagName -q '.[].tagName' | grep "backup-" | tail -n +4)
 
           if [ -z "$RELEASES" ]; then
             echo "✅ No old backups to delete. Total backups <= 3."
