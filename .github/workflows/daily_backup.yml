@@ -1,0 +1,116 @@
+name: Daily Database Backup
+
+on:
+  schedule:
+    # Runs every day at midnight UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to create/delete releases
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Export Database
+        run: |
+          BACKEND_URL="${{ secrets.BACKEND_URL }}"
+          if [ -z "$BACKEND_URL" ]; then
+            BACKEND_URL="https://portofolio-backend-api.fastapicloud.dev"
+          fi
+
+          echo "📦 Exporting database from ${BACKEND_URL}..."
+          HTTP_CODE=$(curl -sS -w "%{http_code}" -o backup_response.json \
+            -H "X-Backup-Key: ${{ secrets.BACKUP_SECRET_KEY }}" \
+            "${BACKEND_URL}/api/backup/export")
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "❌ Backup failed with HTTP $HTTP_CODE"
+            cat backup_response.json
+            exit 1
+          fi
+
+          echo "✅ Database exported successfully!"
+
+      - name: Package Backup
+        run: |
+          DATE=$(date -u +"%Y-%m-%d_%H-%M-%S")
+          mkdir -p "backup_${DATE}"
+
+          # Split the single JSON into per-table files for easier browsing
+          python3 -c "
+          import json, os
+          with open('backup_response.json') as f:
+              data = json.load(f)
+          folder = 'backup_${DATE}'
+          # Save full backup
+          with open(os.path.join(folder, 'full_backup.json'), 'w') as f:
+              json.dump(data, f, indent=2, default=str)
+          # Save per-table files
+          for table, rows in data.get('tables', {}).items():
+              with open(os.path.join(folder, f'{table}.json'), 'w') as f:
+                  json.dump(rows, f, indent=2, default=str)
+          print(f'📁 Created {len(data.get(\"tables\", {}))} table files in {folder}')
+          "
+
+          # Zip the backup folder
+          zip -r "backup_${DATE}.zip" "backup_${DATE}/"
+          echo "BACKUP_FILE=backup_${DATE}.zip" >> $GITHUB_ENV
+          echo "BACKUP_TAG=backup-${DATE}" >> $GITHUB_ENV
+          echo "BACKUP_DATE=${DATE}" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.BACKUP_TAG }}
+          name: "🗄️ Database Backup — ${{ env.BACKUP_DATE }}"
+          body: |
+            Automated daily database backup.
+
+            **Date:** ${{ env.BACKUP_DATE }} UTC
+            **Contains:** All database tables exported as JSON files.
+
+            Download the zip and extract to restore.
+          files: ${{ env.BACKUP_FILE }}
+
+      - name: Cleanup Old Backups (Keep Latest 3)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🧹 Checking for old backup releases to clean up..."
+
+          # List all releases with backup- tag, sorted oldest first
+          RELEASES=$(gh release list --limit 100 | grep "backup-" | tail -n +4 | awk '{print $1}')
+
+          if [ -z "$RELEASES" ]; then
+            echo "✅ No old backups to delete. Total backups <= 3."
+          else
+            for TAG in $RELEASES; do
+              echo "🗑️ Deleting old backup release: $TAG"
+              gh release delete "$TAG" --yes --cleanup-tag
+            done
+            echo "✅ Old backups cleaned up. Only latest 3 remain."
+          fi
+
+      - name: Send Telegram Notification
+        if: always()
+        run: |
+          BOT_TOKEN="${{ secrets.TELEGRAM_BOT_TOKEN }}"
+          CHAT_ID="${{ secrets.TELEGRAM_CHAT_ID }}"
+
+          if [ -z "$BOT_TOKEN" ] || [ -z "$CHAT_ID" ]; then
+            echo "Telegram credentials not set, skipping notification."
+            exit 0
+          fi
+
+          if [ "${{ job.status }}" == "success" ]; then
+            MSG="🗄️ *Daily Database Backup Complete!*%0A%0A✅ Backup saved as GitHub Release%0A📅 Date: ${{ env.BACKUP_DATE }} UTC%0A🏷️ Tag: \`${{ env.BACKUP_TAG }}\`"
+          else
+            MSG="❌ *Daily Database Backup FAILED!*%0A%0A⚠️ Check GitHub Actions for details."
+          fi
+
+          curl -sS "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${MSG}&parse_mode=Markdown" > /dev/null 2>&1 || true

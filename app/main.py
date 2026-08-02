@@ -21,6 +21,7 @@ from app.modules.health import router as health
 from app.modules.gallery import router as gallery
 from app.modules.multiplayer import router as multiplayer
 from app.modules.tracking import router as tracking
+from app.modules.backup import router as backup
 from app.core.database import engine, Base
 
 # Import models to ensure they are registered with SQLAlchemy
@@ -73,3 +74,4 @@ app.include_router(gallery.router)
 app.include_router(guestbook.router, prefix="/api/guestbook", tags=["Guestbook"])
 app.include_router(multiplayer.router, prefix="/api/multiplayer", tags=["Multiplayer"])
 app.include_router(tracking.router)
+app.include_router(backup.router)
